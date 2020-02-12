@@ -34,7 +34,7 @@ class Server:
         while cnt>0:
             # 建立客户端连接
             clientsocket,addr = self.serversocket.accept()      
-        
+            clientsocket.settimeout(Config.Timeout)
             print("In Coming: %s" % str(addr))
             cnt-=1
             kep_client.append(clientsocket)
@@ -44,7 +44,7 @@ class Server:
             #exception socket.timeout
             
     def send(self, msg):
-        
+        pass
         
         
         
