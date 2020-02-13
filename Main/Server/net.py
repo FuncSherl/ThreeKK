@@ -5,7 +5,10 @@ Created on 2020年2月12日
 '''
 import socket
 import sys
-from tools import Config,Message,Room
+from Common import Config,Message
+from Rooms import Room_base
+import threading
+import time
 
 class Server:
     def __init__(self):
@@ -32,6 +35,8 @@ class Server:
         c_sock.send(Message.form_heartbeat(reply=True))
         try:
             tmsg=c_sock.recv(Config.BuffSize)
+            if not tmsg: return False
+            
         except  socket.timeout:
             print ('detected timeout')
             return False
@@ -60,10 +65,16 @@ class Server:
             if len(kep_client)>=cnt:
                 kep_client=self.check_list_con(kep_client)
             
-        return kep_client
+        return Room_base.Room(kep_client)
             #clientsocket.send(msg.encode('utf-8'))
             #clientsocket.close()
             #exception socket.timeout
+            
+    def main_loop(self, cnt=5):
+        while True:
+            teproom=self.form_room(cnt)
+            sd=threading.Thread(target=teproom.start(), args=())
+            sd.start()
             
     def cleanup(self):
         self.serversocket.close()
