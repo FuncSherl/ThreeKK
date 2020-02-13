@@ -36,6 +36,8 @@ def form_gamestart(iden, reply=False):
 def form_gameend(reply=False):
     return form_msg(msg_types[7], reply=reply)
 
+def form_pickhero(hero_ids, reply=True):
+    return form_msg(msg_types[11], third=hero_ids, reply=reply)
 
 
 

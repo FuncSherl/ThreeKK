@@ -1,4 +1,4 @@
 eclipse.preferences.version=1
 encoding//Main/Common/Config.py=utf-8
-encoding//Main/Persons/person_base.py=utf-8
-encoding//Main/Rooms/Room_base.py=utf-8
+encoding//Main/Persons/base.py=utf-8
+encoding//Main/Rooms/base.py=utf-8

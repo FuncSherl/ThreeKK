@@ -54,7 +54,9 @@ class Room_base:
         msg=Message.form_gameend(reply=False)
         self.send_all(self.socket_list, msg)
     
-    
+    def on_pickhero(self):
+        
+        pass
     
     
     

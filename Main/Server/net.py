@@ -6,7 +6,7 @@ Created on 2020年2月12日
 import socket
 import sys
 from Common import Config,Message
-from Rooms import Room_base
+from Rooms import base as Rooms_base
 import threading
 import time
 
@@ -57,7 +57,7 @@ class Server:
             i.send(msg)
     
     
-    def form_room(self, cnt=5, roomtype=Room_base.Room_base):
+    def form_room(self, cnt=5, roomtype=Rooms_base.Room_base):
         kep_client=[]
 
         while len(kep_client)<cnt:
