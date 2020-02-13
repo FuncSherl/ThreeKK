@@ -51,6 +51,11 @@ class Server:
             if self.check_con(i): ret.append(i)
         return ret
     
+    def inform_all(self, sock_list, message):
+        msg=Message.form_inform(message, reply=False)
+        for i in sock_list:
+            i.send(msg)
+    
     
     def form_room(self, cnt=5, roomtype=Room_base.Room_base):
         kep_client=[]
@@ -62,8 +67,11 @@ class Server:
             print("In Coming: %s" % str(addr))
 
             kep_client.append(clientsocket)
+            
             if len(kep_client)>=cnt:
                 kep_client=self.check_list_con(kep_client)
+                
+            self.inform_all(kep_client, "player count: %d/%d"%(len(kep_client), cnt) )
             
         return roomtype(kep_client)
             #clientsocket.send(msg.encode('utf-8'))

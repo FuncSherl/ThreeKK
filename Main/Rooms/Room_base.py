@@ -44,13 +44,32 @@ class Room_base:
     def send_all(self, sock_list, msg):
         for i in sock_list:  i.send(msg)
             
+    #游戏中用到的一些事件
     def on_gamestart(self):
         for ind, i in enumerate(self.socket_list):
             msg=Message.form_gamestart(ind, reply=False)
             i.send(msg)
+            
+    def on_gameend(self):
+        msg=Message.form_gameend(reply=False)
+        self.send_all(self.socket_list, msg)
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    #main function
     def start(self):
-        pass
+        self.on_gamestart()
+        
     
     
 
