@@ -5,7 +5,7 @@ Created on 2020年2月12日
 '''
 import socket
 import sys
-from tools import Config,Message
+from tools import Config,Message,Room
 
 class Server:
     def __init__(self):
@@ -65,7 +65,8 @@ class Server:
             #clientsocket.close()
             #exception socket.timeout
             
-        
+    def cleanup(self):
+        self.serversocket.close()
         
         
         
