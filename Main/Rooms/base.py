@@ -5,12 +5,13 @@ Created on 2020年2月12日
 @author: sherl
 '''
 from Common import Config,Message
-import socket,json
+import socket,json,random
+import Persons
 
 class base:
     def __init__(self, socket_list):
-        self.socket_list=socket_list
-        
+        self.socket_list=socket_list        
+        self.heros_list=[]
     
     
     def send_recv(self, c_sock, msg=None):
@@ -55,8 +56,20 @@ class base:
         self.send_all(self.socket_list, msg)
     
     def on_pickhero(self):
+        cnt_ned=len(self.socket_list)*Config.HerosforSelect
+        hero_list=random.sample(range( len(Persons.class_list) ), cnt_ned)
+        for ind,i in enumerate(self.socket_list):
+            msg=Message.form_pickhero( hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect] , reply=True )
+            i.send(msg)
         
-        pass
+        ret=self.send_recv_onebyone(self.socket_list)
+        for ind,i in enumerate(ret):
+            if i is None:
+                self.heros_list.append(hero_list[ind*Config.HerosforSelect])
+            else:
+                self.heros_list.append(i['herofrom'][0])
+            
+        
     
     
     
@@ -85,7 +98,7 @@ class base:
 
 
 if __name__ == '__main__':
-    pass
+    print (Persons.class_list)
 
 
 
