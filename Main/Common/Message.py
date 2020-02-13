@@ -24,6 +24,8 @@ def form_msg(msg_name, start=None, end=None, third=None, forth=None, fifth=None,
 def form_heartbeat(reply=True):
     return form_msg(msg_types[0], reply=reply)
 
+def form_gamestart(iden, reply=False):
+    return form_msg(msg_types[6], start=iden, end=iden, reply=reply)
 
 
 

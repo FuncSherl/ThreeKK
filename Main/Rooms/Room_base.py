@@ -7,17 +7,18 @@ Created on 2020年2月12日
 from Common import Config,Message
 import socket,json
 
-class Room:
+class Room_base:
     def __init__(self, socket_list):
+        self.socket_list=socket_list
         
-        pass
     
     
-    def send_recv(self, c_sock, msg):
+    def send_recv(self, c_sock, msg=None):
         '''
-        :向客户端发送包，等待回复
+        :等待回复
+        :若msg不为空则先发送msg
         '''
-        c_sock.send(msg)
+        if msg is not None: c_sock.send(msg)
         try:
             tmsg=c_sock.recv(Config.BuffSize)
             if not tmsg: return False
@@ -30,11 +31,48 @@ class Room:
             return False
         return json.loads(tmsg)
     
+    def send_recv_onebyone(self, sock_list, msg=None):
+        ret=[]
+        for i in sock_list:
+            tep=self.send_recv(i, msg)
+            if tep:
+                ret.append(tep)
+            else:
+                ret.append(None)
+        return ret
+                
+    def send_all(self, sock_list, msg):
+        for i in sock_list:  i.send(msg)
+            
+    def on_gamestart(self):
+        for ind, i in enumerate(self.socket_list):
+            msg=Message.form_gamestart(ind, reply=False)
+            i.send(msg)
     
     def start(self):
         pass
     
     
 
+
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     pass
+
+
+
+
+
+
+
+
+
+
+

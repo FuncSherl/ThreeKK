@@ -52,7 +52,7 @@ class Server:
         return ret
     
     
-    def form_room(self, cnt=5):
+    def form_room(self, cnt=5, roomtype=Room_base.Room_base):
         kep_client=[]
 
         while len(kep_client)<cnt:
@@ -65,7 +65,7 @@ class Server:
             if len(kep_client)>=cnt:
                 kep_client=self.check_list_con(kep_client)
             
-        return Room_base.Room(kep_client)
+        return roomtype(kep_client)
             #clientsocket.send(msg.encode('utf-8'))
             #clientsocket.close()
             #exception socket.timeout
