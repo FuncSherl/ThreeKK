@@ -5,7 +5,7 @@ Created on 2020年2月12日
 '''
 import socket
 import sys
-from tools import Config
+from tools import Config,Message
 
 class Server:
     def __init__(self):
@@ -26,25 +26,45 @@ class Server:
         self.serversocket.listen(5)
         
     def check_con(self, c_sock):
-        pass
+        '''
+        :向客户端发送心跳包，等待回复，确认连接
+        '''
+        c_sock.send(Message.form_heartbeat(reply=True))
+        try:
+            tmsg=c_sock.recv(Config.BuffSize)
+        except  socket.timeout:
+            print ('detected timeout')
+            return False
+        except:
+            print ('unexpected error')
+            return False
+        return True
+    
+    def check_list_con(self, sock_list):
+        ret=[]
+        for i in sock_list:
+            if self.check_con(i): ret.append(i)
+        return ret
     
     
     def form_room(self, cnt=5):
         kep_client=[]
-        while cnt>0:
+
+        while len(kep_client)<cnt:
             # 建立客户端连接
             clientsocket,addr = self.serversocket.accept()      
             clientsocket.settimeout(Config.Timeout)
             print("In Coming: %s" % str(addr))
-            cnt-=1
+
             kep_client.append(clientsocket)
+            if len(kep_client)>=cnt:
+                kep_client=self.check_list_con(kep_client)
+            
         return kep_client
             #clientsocket.send(msg.encode('utf-8'))
             #clientsocket.close()
             #exception socket.timeout
             
-    def send(self, msg):
-        pass
         
         
         
