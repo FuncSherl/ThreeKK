@@ -57,7 +57,7 @@ class Server:
             i.send(msg)
     
     
-    def form_room(self, cnt=5, roomtype=Rooms_base.Room_base):
+    def form_room(self, cnt=5, roomtype=Rooms_base.base):
         kep_client=[]
 
         while len(kep_client)<cnt:

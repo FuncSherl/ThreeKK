@@ -7,7 +7,7 @@ Created on 2020年2月12日
 from Common import Config,Message
 import socket,json
 
-class Room_base:
+class base:
     def __init__(self, socket_list):
         self.socket_list=socket_list
         

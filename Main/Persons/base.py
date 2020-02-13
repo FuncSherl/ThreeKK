@@ -7,7 +7,7 @@ Created on 2020年2月12日
 import socket
 import sys
 
-class Person_base:
+class base:
     def __init__(self):
         pass
     
