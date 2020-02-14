@@ -115,7 +115,7 @@ class base:
                 self.heros_list.append([hero_list[ind*Config.HerosforSelect]])
             else:
                 self.heros_list.append(i['myhero'])
-            self.heros_instance.append(  Persons.class_list[self.heros_list[-1]](self)  )
+            self.heros_instance.append(  Persons.class_list[self.heros_list[-1]](self, ind)  )
         #到这里已经英雄选择完成
         
     def on_gameinited(self):
@@ -123,19 +123,33 @@ class base:
         for ind,i in enumerate(self.socket_list):
             cards_tep=self.get_cards(Config.Cardsforinit)
             
-            self.heros_instance[ind].getcard(cards_tep)
+            self.heros_instance[ind].addcard(cards_tep)
             
             msg=Message.form_gameinited(ind, self.heros_list[ind], cards_tep, self.heros_list,  reply=False)
             i.send(msg)
             
-    def on_getcard(self, cnt):
-        cards_tep=self.get_cards(cnt)
+    def on_getcard(self, cnt, end, start=None,  public=False,  reply=False):
+        if not start: cards_tep=self.get_cards(cnt)
+        else: 
+            cnt=min(cnt, len(self.heros_instance[start].cards))
+            sel=random.sample(    range( len(self.heros_instance[start].cards) ), cnt)
+            cards_tep=[self.heros_instance[start].cards[j] for j in sel]
+
+            self.heros_instance[start].cards = [self.heros_instance[start].cards[i] for i in range(len(self.heros_instance[start].cards)) if (i not in sel)]
+        
+        for ind,i in enumerate(self.socket_list):
+            tep=[None]*cnt
+            if public or ind==end: tep=cards_tep
+                          
+            msg=Message.form_getcard(ind, self.heros_list[ind], self.heros_instance[ind].cards, end,start, tep, reply=( (ind==end) and reply))
+            i.send(msg)
         
     
     def on_roundstart(self, startid=0):
         for ind,i in enumerate(self.socket_list):
-            msg=Message.form_roundstart(ind, self.heros_list[ind], self.heros_instance[ind].cards, startid, reply=(startid==ind))
+            msg=Message.form_roundstart(ind, self.heros_list[ind], self.heros_instance[ind].cards, startid, reply=False)
             i.send(msg)
+        self.heros_instance[startid].on_roundstart()
     
     
     

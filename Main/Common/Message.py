@@ -44,8 +44,9 @@ def form_gameend(myid, reply=False):
 def form_pickhero(myid, hero_ids, reply=True):
     return form_msg(msg_types[11], myid=myid, myhero=hero_ids, reply=reply)
 
-def form_getcard(myid, myheroid,mycards, cards, reply=False):
-    return form_msg(msg_types[3], myid=myid, myhero=myheroid, mycards=mycards, end=myid, heroto=myheroid, third=cards, reply=reply)
+def form_getcard(myid, myheroid,mycards, end, start, cards, reply=False):
+    #消息发到的人物id，消息发到的英雄， 摸牌前的手牌，谁摸牌，摸得什么牌，需要回复?
+    return form_msg(msg_types[3], myid=myid, myhero=myheroid, mycards=mycards,start=start,  end=end, third=cards, reply=reply)
 
 def form_roundstart(myid, myheroid, mycards, whosround ,reply=False):
     return form_msg(msg_types[4], myid=myid, myhero=myheroid,mycards=mycards, third=whosround, reply=reply)
