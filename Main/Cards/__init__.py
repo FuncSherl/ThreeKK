@@ -8,7 +8,7 @@ Created on 2020年2月12日
 import os
 import importlib
 
-print ('Persons imported',os.getcwd(),__file__)
+print ('Cards imported',os.getcwd(),__file__)
 
 abspath=os.path.abspath(__file__)
 absdir=os.path.dirname(abspath)
@@ -22,7 +22,7 @@ def get_modules(package=absdir):
     files = os.listdir(package)
 
     for file in files:
-        if file.startswith('person'):
+        if file.startswith('card'):
             name, ext = os.path.splitext(file)
             modules.append(name)
 

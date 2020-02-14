@@ -22,24 +22,26 @@ class base:
         if msg is not None: c_sock.send(msg)
         try:
             tmsg=c_sock.recv(Config.BuffSize)
-            if not tmsg: return False
+            if not tmsg: return None
             
         except  socket.timeout:
             print ('detected timeout')
-            return False
+            return None
         except:
             print ('unexpected error')
-            return False
+            return None
         return json.loads(tmsg)
     
-    def send_recv_onebyone(self, sock_list, msg=None):
+    def send_recv_onebyone(self, sock_list, msg_want, msg=None):
         ret=[]
-        for i in sock_list:
-            tep=self.send_recv(i, msg)
-            if tep:
-                ret.append(tep)
-            else:
-                ret.append(None)
+        idcnt=0
+        while idcnt<len(sock_list):
+            tep=self.send_recv(sock_list[idcnt], msg)
+            if tep and tep['msg_name']!=msg_want: continue
+                
+            ret.append(tep)
+            idcnt+=1
+
         return ret
                 
     def send_all(self, sock_list, msg):
@@ -59,16 +61,16 @@ class base:
         cnt_ned=len(self.socket_list)*Config.HerosforSelect
         hero_list=random.sample(range( len(Persons.class_list) ), cnt_ned)
         for ind,i in enumerate(self.socket_list):
-            msg=Message.form_pickhero( hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect] , reply=True )
+            msg=Message.form_pickhero(ind,  hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect] , reply=True )
             i.send(msg)
         
-        ret=self.send_recv_onebyone(self.socket_list)
+        ret=self.send_recv_onebyone(self.socket_list, Message.msg_types[11])
         for ind,i in enumerate(ret):
-            if i is None:
+            if not i:
                 self.heros_list.append(hero_list[ind*Config.HerosforSelect])
             else:
-                self.heros_list.append(i['herofrom'][0])
-            
+                self.heros_list.append(i['myhero'][0])
+        #到这里已经英雄选择完成
         
     
     

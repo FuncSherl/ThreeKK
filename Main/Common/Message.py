@@ -13,8 +13,10 @@ msg_types=['heartbeat', 'playcard', 'judgement', 'getcard', 'roundstart', 'round
 
 
 
-def form_msg(msg_name, start=None, end=None, herofrom=None, heroto=None, third=None, forth=None, fifth=None, reply=True):
+def form_msg(msg_name, myid=None, myhero=None, start=None, end=None, herofrom=None, heroto=None, third=None, forth=None, fifth=None, reply=True):
     kep={'msg_name':msg_name,
+         'myid':myid,
+         'myhero':myhero,
          'start':start,
          'end':end,
          'herofrom':herofrom,
@@ -33,13 +35,13 @@ def form_heartbeat(reply=True):
     return form_msg(msg_types[0], reply=reply)
 
 def form_gamestart(iden, reply=False):
-    return form_msg(msg_types[6], start=iden, end=iden, reply=reply)
+    return form_msg(msg_types[6], myid=iden, reply=reply)
 
 def form_gameend(reply=False):
     return form_msg(msg_types[7], reply=reply)
 
-def form_pickhero(hero_ids, reply=True):
-    return form_msg(msg_types[11], herofrom=hero_ids, reply=reply)
+def form_pickhero(myid, hero_ids, reply=True):
+    return form_msg(msg_types[11], myid=myid, myhero=hero_ids, reply=reply)
 
 
 
