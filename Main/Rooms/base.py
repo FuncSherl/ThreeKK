@@ -13,7 +13,26 @@ class base:
         self.socket_list=socket_list        
         self.heros_list=[]
         self.cards_pile=self.generate_cards()
+        self.cards_drop=[]
+        
+    def get_cards(self, cnt=1):
+        if len(self.cards_pile)>=cnt:
+            ret=self.cards_pile[:cnt]
+            self.cards_pile=self.cards_pile[cnt:]
+            return ret
+        else:
+            if len(self.cards_drop) >0:
+                random.shuffle(self.cards_drop)
+                self.cards_pile.extend(self.cards_drop)
+                self.cards_drop=[]
+            else:
+                print ("add new pile of cards") #加一副牌
+                self.cards_pile.extend(self.generate_cards())
+            return self.get_cards(cnt)
     
+    def drop_cards(self, cards_droped):
+        self.cards_drop.extend(cards_droped)              
+            
     
     def generate_cards(self):
         #[ [cardid, color, num],...]
