@@ -8,9 +8,6 @@ import Persons
 import Persons.base as base
 
 class person_guanyu(base.base):
-    def __init__(self):
-        pass
-    
     def On_game_init(self):
         pass
     

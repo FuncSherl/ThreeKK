@@ -6,17 +6,18 @@ Created on 2020年2月13日
 import json
 #0   1    2    3    4      5      6     7      8      9    10
 #心跳、出牌、判定牌、发牌、回合开始、回合结束、游戏开始、游戏结束、发动技能、发动装备、通知、
-#  11
-#选择人物
+#  11         12
+#选择人物、回合开始前的初始化信息
 msg_types=['heartbeat', 'playcard', 'judgement', 'getcard', 'roundstart', 'roundend', 'gamestart', 'gameend', 'skillstart', 'equipstart', 'inform',
-            'pickhero']
+            'pickhero', 'gameinited']
 
 
 
-def form_msg(msg_name, myid=None, myhero=None, start=None, end=None, herofrom=None, heroto=None, third=None, forth=None, fifth=None, reply=True):
+def form_msg(msg_name, myid=None, myhero=None, mycards=None, start=None, end=None, herofrom=None, heroto=None, third=None, forth=None, fifth=None, reply=True):
     kep={'msg_name':msg_name,
          'myid':myid,
          'myhero':myhero,
+         'mycards':mycards,
          'start':start,
          'end':end,
          'herofrom':herofrom,
@@ -37,16 +38,20 @@ def form_heartbeat(reply=True):
 def form_gamestart(iden, reply=False):
     return form_msg(msg_types[6], myid=iden, reply=reply)
 
-def form_gameend(reply=False):
+def form_gameend(myid, reply=False):
     return form_msg(msg_types[7], reply=reply)
 
 def form_pickhero(myid, hero_ids, reply=True):
     return form_msg(msg_types[11], myid=myid, myhero=hero_ids, reply=reply)
 
+def form_getcard(myid, myheroid,mycards, cards, reply=False):
+    return form_msg(msg_types[3], myid=myid, myhero=myheroid, mycards=mycards, end=myid, heroto=myheroid, third=cards, reply=reply)
 
+def form_roundstart(myid, myheroid, mycards, whosround ,reply=False):
+    return form_msg(msg_types[4], myid=myid, myhero=myheroid,mycards=mycards, third=whosround, reply=reply)
 
-
-
+def form_gameinited(myid, myheroid, mycards ,herolist, reply=False):#游戏初始化完成的人物和牌信息声明 
+    return form_msg(msg_types[12], myid=myid, myhero=myheroid, mycards=mycards, third=herolist, reply=reply)
 
 
 
@@ -56,3 +61,17 @@ if __name__ == '__main__':
     tep=form_msg('test')
     print(tep)
     print (type(json.loads(tep)))
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

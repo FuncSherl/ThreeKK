@@ -12,10 +12,15 @@ class base:
     def __init__(self, socket_list):
         self.socket_list=socket_list        
         self.heros_list=[]
+        self.heros_instance=[]
+        
         self.cards_pile=self.generate_cards()
         self.cards_drop=[]
         
+        self.game_status=True
+        
     def get_cards(self, cnt=1):
+        #当发牌时
         if len(self.cards_pile)>=cnt:
             ret=self.cards_pile[:cnt]
             self.cards_pile=self.cards_pile[cnt:]
@@ -31,11 +36,13 @@ class base:
             return self.get_cards(cnt)
     
     def drop_cards(self, cards_droped):
+        #出过的牌
         self.cards_drop.extend(cards_droped)              
             
     
     def generate_cards(self):
         #[ [cardid, color, num],...]
+        #生成一副牌，根据牌的种类及各类中的各颜色的数目，随机分配点数
         kep_card_colors=[[] for x in range(len(Config.Card_color_enum))]
         for indi, i in enumerate(Cards.class_list):
             for indj,j in enumerate(i.cards_num_color):
@@ -83,8 +90,6 @@ class base:
 
         return ret
                 
-    def send_all(self, sock_list, msg):
-        for i in sock_list:  i.send(msg)
             
     #游戏中用到的一些事件
     def on_gamestart(self):
@@ -93,8 +98,9 @@ class base:
             i.send(msg)
             
     def on_gameend(self):
-        msg=Message.form_gameend(reply=False)
-        self.send_all(self.socket_list, msg)
+        for ind,i in enumerate(self.socket_list):
+            msg=Message.form_gameend(ind, reply=False)
+            i.send(msg)
     
     def on_pickhero(self):
         cnt_ned=len(self.socket_list)*Config.HerosforSelect
@@ -106,17 +112,30 @@ class base:
         ret=self.send_recv_onebyone(self.socket_list, Message.msg_types[11])
         for ind,i in enumerate(ret):
             if not i:
-                self.heros_list.append(hero_list[ind*Config.HerosforSelect])
+                self.heros_list.append([hero_list[ind*Config.HerosforSelect]])
             else:
-                self.heros_list.append(i['myhero'][0])
+                self.heros_list.append(i['myhero'])
+            self.heros_instance.append(  Persons.class_list[self.heros_list[-1]](self)  )
         #到这里已经英雄选择完成
         
+    def on_gameinited(self):
+        #初始时游戏信息
+        for ind,i in enumerate(self.socket_list):
+            cards_tep=self.get_cards(Config.Cardsforinit)
+            
+            self.heros_instance[ind].getcard(cards_tep)
+            
+            msg=Message.form_gameinited(ind, self.heros_list[ind], cards_tep, self.heros_list,  reply=False)
+            i.send(msg)
+            
+    def on_getcard(self, cnt):
+        cards_tep=self.get_cards(cnt)
+        
     
-    
-    
-    
-    
-    
+    def on_roundstart(self, startid=0):
+        for ind,i in enumerate(self.socket_list):
+            msg=Message.form_roundstart(ind, self.heros_list[ind], self.heros_instance[ind].cards, startid, reply=(startid==ind))
+            i.send(msg)
     
     
     
@@ -125,9 +144,16 @@ class base:
     #main function
     def start(self):
         self.on_gamestart()
+        self.on_pickhero()
+        self.on_gameinited()
         
-    
-    
+        st=0
+        while self.game_status:
+            if self.heros_instance[st].alive: self.on_roundstart(st)
+            
+            st+=1
+            st%=len(self.socket_list)
+            
 
 
 

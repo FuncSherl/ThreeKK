@@ -8,14 +8,16 @@ import socket
 import sys
 
 class base:
-    def __init__(self):
-        pass
+    def __init__(self, room):
+        self.room=room
+        self.alive=True
+        self.attack_cnt=1
+        self.cards=[]
+        
     
-    def On_game_init(self):
-        pass
     
-    def On_round_init(self):
-        pass
+    def getcard(self, cards_list):
+        self.cards.extend(cards_list)
     
     
 

@@ -88,8 +88,10 @@ class Server:
         self.serversocket.close()
         
         
-        
-        
+if __name__ == '__main__':
+    tep=Server()
+    tep.main_loop(2)
+    tep.cleanup()
         
         
         
