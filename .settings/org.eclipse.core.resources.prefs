@@ -2,6 +2,7 @@ eclipse.preferences.version=1
 encoding//Main/Cards/__init__.py=utf-8
 encoding//Main/Cards/base.py=utf-8
 encoding//Main/Cards/card_attack.py=utf-8
+encoding//Main/Cards/card_miss.py=utf-8
 encoding//Main/Common/Config.py=utf-8
 encoding//Main/Persons/__init__.py=utf-8
 encoding//Main/Persons/base.py=utf-8

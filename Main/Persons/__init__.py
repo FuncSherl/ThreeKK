@@ -20,7 +20,7 @@ def get_modules(package=absdir):
     """
     modules = []
     files = os.listdir(package)
-
+    files.sort()
     for file in files:
         if file.startswith('person'):
             name, ext = os.path.splitext(file)

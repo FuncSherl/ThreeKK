@@ -6,13 +6,33 @@ Created on 2020年2月12日
 '''
 from Common import Config,Message
 import socket,json,random
-import Persons
+import Persons,Cards
 
 class base:
     def __init__(self, socket_list):
         self.socket_list=socket_list        
         self.heros_list=[]
+        self.cards_pile=self.generate_cards()
     
+    
+    def generate_cards(self):
+        #[ [cardid, color, num],...]
+        kep_card_colors=[[] for x in range(len(Config.Card_color_enum))]
+        for indi, i in enumerate(Cards.class_list):
+            for indj,j in enumerate(i.cards_num_color):
+                if indj >= len(Config.Card_color_enum): break #防止越接 
+                for k in range(j):
+                    kep_card_colors[indj].append([indi, indj])
+        #print (kep_card_colors)
+        ret=[]
+        for i in kep_card_colors:
+            random.shuffle(i)
+            for indj,j in enumerate(i):
+                tep_ind=indj%(Config.Card_num_max-Config.Card_num_min+1)+Config.Card_num_min
+                j.append(tep_ind)
+            ret.extend(i)
+        random.shuffle(ret)
+        return ret
     
     def send_recv(self, c_sock, msg=None):
         '''
@@ -101,7 +121,10 @@ class base:
 
 if __name__ == '__main__':
     print (Persons.class_list)
-
+    print (Cards.class_list)
+    tep=base([0,1])
+    print (tep.cards_pile)
+    print (len(tep.cards_pile))
 
 
 

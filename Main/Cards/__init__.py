@@ -20,7 +20,7 @@ def get_modules(package=absdir):
     """
     modules = []
     files = os.listdir(package)
-
+    files.sort()
     for file in files:
         if file.startswith('card'):
             name, ext = os.path.splitext(file)
@@ -32,3 +32,5 @@ modules_list=get_modules()
 
 class_list=[   getattr( importlib.import_module('.'+x, package_name), x  )    for x in modules_list]
 #print (class_list)
+#print (class_list[0].cards_num_color)
+# 下面根据统计的牌数目进行牌堆初始化

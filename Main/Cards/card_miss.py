@@ -4,20 +4,14 @@ Created on 2020年2月14日
 
 @author: sherl
 '''
+import Cards.base as base
 
 
-
-class base:
-    cards_num_color=[0,0,0,0]
+class card_miss(base.base):
+    cards_num_color=[0,0,7,17]
     def __init__(self):
+        #super().__init__()
         pass
-        
-
-
-
-
-
-
 
 
 
