@@ -11,8 +11,8 @@ import Persons,Cards
 class base:
     def __init__(self, socket_list):
         self.socket_list=socket_list        
-        self.heros_list=[]
-        self.heros_instance=[]
+        self.heros_list=[None for i in range(len(self.socket_list))]
+        self.heros_instance=[None for i in range(len(self.socket_list))]
         self.campid=list( range(len(self.socket_list)) )
         
         self.cards_pile=self.generate_cards()
@@ -90,17 +90,26 @@ class base:
             idcnt+=1
 
         return ret
-                
+    
+    def send_msg_to_all(self, msg):
+        for ind,i in enumerate(self.socket_list):
+            msg['myid']=ind
+            msg['myhero']=self.heros_list[ind]
+            msg['mycards']=self.heros_instance[ind].cards
+            msg=json.dumps(msg)
+            i.send(msg)        
             
     #游戏中用到的一些事件
     def on_gamestart(self):
         for ind, i in enumerate(self.socket_list):
             msg=Message.form_gamestart(ind, reply=False)
+            msg=json.dumps(msg)
             i.send(msg)
             
     def on_gameend(self):
         for ind,i in enumerate(self.socket_list):
             msg=Message.form_gameend(ind, reply=False)
+            msg=json.dumps(msg)
             i.send(msg)
     
     def on_pickhero(self):
@@ -108,15 +117,16 @@ class base:
         hero_list=random.sample(range( len(Persons.class_list) ), cnt_ned)
         for ind,i in enumerate(self.socket_list):
             msg=Message.form_pickhero(ind,  hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect] , reply=True )
+            msg=json.dumps(msg)
             i.send(msg)
         
         ret=self.send_recv_onebyone(self.socket_list, Message.msg_types[11])
         for ind,i in enumerate(ret):
             if not i:
-                self.heros_list.append([hero_list[ind*Config.HerosforSelect]])
+                self.heros_list[ind]=[hero_list[ind*Config.HerosforSelect]]
             else:
-                self.heros_list.append(i['myhero'])
-            self.heros_instance.append(  Persons.class_list[self.heros_list[-1]](self, ind)  )
+                self.heros_list[ind]=i['myhero']
+            self.heros_instance[ind]=  [Persons.class_list[x](self, ind)  for x in self.heros_list[ind] ]
         #到这里已经英雄选择完成
         
     def on_gameinited(self):
@@ -127,6 +137,7 @@ class base:
             self.heros_instance[ind].addcard(cards_tep)
             
             msg=Message.form_gameinited(ind, self.heros_list[ind], cards_tep, self.heros_list,  reply=False)
+            msg=json.dumps(msg)
             i.send(msg)
             
     def on_getcard(self, cnt, end, start=None,  public=False,  reply=False):
@@ -144,12 +155,15 @@ class base:
             if public or ind==end: tep=cards_tep
                           
             msg=Message.form_getcard(ind, self.heros_list[ind], self.heros_instance[ind].cards, end,start, tep, reply=( (ind==end) and reply))
+            msg=json.dumps(msg)
             i.send(msg)
         self.heros_instance[end].addcard(cards_tep)
+        
     
     def on_roundstart(self, startid):
         for ind,i in enumerate(self.socket_list):
             msg=Message.form_roundstart(ind, self.heros_list[ind], self.heros_instance[ind].cards, startid, reply=False)
+            msg=json.dumps(msg)
             i.send(msg)
         self.heros_instance[startid].round_start()        
         #以上完成回合开始时的准备工作

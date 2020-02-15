@@ -6,10 +6,10 @@ Created on 2020年2月13日
 import json
 #0   1    2    3    4      5      6     7      8      9    10
 #心跳、出牌、判定牌、发牌、回合开始、回合结束、游戏开始、游戏结束、发动技能、发动装备、通知(游戏开始前)、
-#  11         12           13
-#选择人物、回合开始前的初始化信息、回合结束弃牌
+#  11         12           13           14
+#选择人物、回合开始前的初始化信息、回合结束弃牌、询问是否出牌（即使没有该类牌 ）
 msg_types=['heartbeat', 'playcard', 'judgement', 'getcard', 'roundstart', 'roundend', 'gamestart', 'gameend', 'skillstart', 'equipstart', 'inform_beforegame',
-            'pickhero', 'gameinited','roundend_dropcard']
+            'pickhero', 'gameinited','roundend_dropcard','askselect']
 
 def make_msg2fun(obj_class):
     ret={}
@@ -31,7 +31,7 @@ def form_msg(msg_name, myid=None, myhero=None, mycards=None, start=None, end=Non
          'fifth':fifth,
          'reply':reply
         }
-    return json.dumps(kep)
+    return kep
 
 def form_inform_beforegame( msg,myid=None, myhero=None, mycards=None, reply=False):#游戏匹配过程中的消息提示, 点发消息，不需要end
     return form_msg(msg_types[10], myid=myid, myhero=myhero,mycards=mycards, third=msg, reply=reply)
@@ -63,6 +63,8 @@ def form_gameinited(myid, myheroid, mycards ,herolist, reply=False):#游戏初�
 def form_roundend_dropcard(myid, myheroid, mycards, end, dropcnt, reply=True):#回合结束弃牌阶段，同roundstart
     return form_msg(msg_types[13], myid=myid, myhero=myheroid, mycards=mycards, start=end ,end=end, third=dropcnt, reply=reply)
 
+def form_askselect(myid, myheroid, mycards, end, informmsg, reply=True):
+    return form_msg(msg_types[14], myid=myid, myhero=myheroid, mycards=mycards, start=end ,end=end, third=informmsg, reply=reply)
 
 
 

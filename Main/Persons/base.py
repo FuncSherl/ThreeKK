@@ -66,7 +66,12 @@ class base:
         if len(self.cards)>self.health:      
             #启动弃牌
             dropcnt=len(self.cards)-self.health
-                  
+            
+            for ind,i in enumerate(self.room.socket_list):
+                msg=Message.form_roundend_dropcard(ind, self.room.heros_list[ind], self.room.heros_instance[ind].cards, self.playerid, dropcnt, reply=(self.playerid==ind))
+                i.send(msg)
+            
+            
             
         
     def on_gamestart(self, msg):
@@ -93,6 +98,8 @@ class base:
     def on_roundend_dropcard(self, msg):
         pass
     
+    def on_askselect(self, msg):
+        pass
 
     
     
