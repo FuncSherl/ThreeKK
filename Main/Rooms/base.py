@@ -78,12 +78,12 @@ class base:
             return None
         return json.loads(tmsg)
     
-    def send_recv_onebyone(self, sock_list, msg_want, msg=None):
+    def send_recv_onebyone(self, sock_list, msg_want=None, msg=None):
         ret=[]
         idcnt=0
         while idcnt<len(sock_list):
             tep=self.send_recv(sock_list[idcnt], msg)
-            if tep and tep['msg_name']!=msg_want: continue
+            if tep and msg_want and tep['msg_name']!=msg_want: continue
                 
             ret.append(tep)
             idcnt+=1
@@ -136,6 +136,7 @@ class base:
             cards_tep=[self.heros_instance[start].cards[j] for j in sel]
 
             self.heros_instance[start].cards = [self.heros_instance[start].cards[i] for i in range(len(self.heros_instance[start].cards)) if (i not in sel)]
+
         
         for ind,i in enumerate(self.socket_list):
             tep=[None]*cnt
@@ -143,7 +144,7 @@ class base:
                           
             msg=Message.form_getcard(ind, self.heros_list[ind], self.heros_instance[ind].cards, end,start, tep, reply=( (ind==end) and reply))
             i.send(msg)
-        
+        self.heros_instance[end].addcard(cards_tep)
     
     def on_roundstart(self, startid=0):
         for ind,i in enumerate(self.socket_list):

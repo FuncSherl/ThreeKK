@@ -52,7 +52,7 @@ class Server:
         return ret
     
     def inform_all(self, sock_list, message):
-        msg=Message.form_inform(message, reply=False)
+        msg=Message.form_inform_beforegame(message, reply=False)
         for i in sock_list:
             i.send(msg)
     
