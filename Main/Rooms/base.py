@@ -154,7 +154,14 @@ class base:
         self.heros_instance[startid].round_start()        
         #以上完成回合开始时的准备工作
         
-        
+        while self.heros_instance[startid].round_status:
+            #新一轮出牌
+            msg=self.send_recv(self.socket_list[startid])
+            if not msg: #出牌超时，判定回合结束
+                self.heros_instance[startid].on_roundend()
+                break
+            
+                
     
     
     

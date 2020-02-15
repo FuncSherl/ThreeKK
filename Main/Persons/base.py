@@ -59,11 +59,15 @@ class base:
         pass
     
     def on_roundstart(self, msg=None):
+        #没有技能情况下就是摸2张牌，这里room.getcard可以从玩家手中摸牌，此时start为被摸牌的玩家 ，发出后状态为等待回复
         self.room.on_getcard( Config.Cardeachround, end=self.playerid, start=None,  public=False,  reply=True)
         
-    def on_roundend(self, msg):
-        if len(self.cards)>self.blood:            
-            pass
+    def on_roundend(self, msg=None):
+        if len(self.cards)>self.health:      
+            #启动弃牌
+            dropcnt=len(self.cards)-self.health
+                  
+            
         
     def on_gamestart(self, msg):
         pass
