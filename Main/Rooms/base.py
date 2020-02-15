@@ -147,12 +147,14 @@ class base:
             i.send(msg)
         self.heros_instance[end].addcard(cards_tep)
     
-    def on_roundstart(self, startid=0):
+    def on_roundstart(self, startid):
         for ind,i in enumerate(self.socket_list):
             msg=Message.form_roundstart(ind, self.heros_list[ind], self.heros_instance[ind].cards, startid, reply=False)
             i.send(msg)
-        self.heros_instance[startid].round_start()
-    
+        self.heros_instance[startid].round_start()        
+        #以上完成回合开始时的准备工作
+        
+        
     
     
     

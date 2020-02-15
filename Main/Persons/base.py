@@ -33,6 +33,7 @@ class base:
         self.attack_cnt=0
         self.round_status=True  #回合未结束
         
+        
     def round_start(self):
         self.round_init()
         self.on_roundstart()
