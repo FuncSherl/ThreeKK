@@ -9,19 +9,40 @@ import sys
 from Common import Config,Message
 
 class base:
+    name='base'
+    describ='base class'
+    
+    describ_skill1=''
+    describ_skill2=''
+    
+    blood=4
+    
     def __init__(self, room, pid):
         self.room=room
         self.playerid=pid   #玩家的id，即数组中的下标 
         self.mysocket=self.room.socket_list[pid]    #记录一下本实例中的socket
         
         self.alive=True
-        self.blood=4
-        self.attack_cnt=0
+        self.health=self.blood
         self.cards=[]
+        self.round_init()
+        self.function_table=Message.make_msg2fun(self)
+        
+        
+    def round_init(self):
+        self.attack_cnt=0
+        self.round_status=True  #回合未结束
+        
+    def round_start(self):
+        self.round_init()
+        self.on_roundstart()
+        
     
+        
         
     def addcard(self, cards_list):
         self.cards.extend(cards_list)
+    
     
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致
     def on_heartbeat(self, msg):
@@ -36,9 +57,8 @@ class base:
     def on_getcard(self, msg):
         pass
     
-    def on_roundstart(self, msg):
-        self.attack_cnt=0
-        self.room.on_getcard( Config.Cardeachround, end=self.playerid, start=None,  public=False,  reply=False)
+    def on_roundstart(self, msg=None):
+        self.room.on_getcard( Config.Cardeachround, end=self.playerid, start=None,  public=False,  reply=True)
         
     def on_roundend(self, msg):
         if len(self.cards)>self.blood:            
@@ -74,3 +94,16 @@ class base:
 
 if __name__ == '__main__':
     pass
+
+
+
+
+
+
+
+
+
+
+
+
+

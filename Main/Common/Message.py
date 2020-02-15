@@ -14,8 +14,8 @@ msg_types=['heartbeat', 'playcard', 'judgement', 'getcard', 'roundstart', 'round
 def make_msg2fun(obj_class):
     ret={}
     for i in msg_types:
-        func_name='on_'+i
-        ret[i]=getattr(obj_class, func_name)
+        func_name='on_'+i.strip()
+        ret[i.strip()]=getattr(obj_class, func_name)
     return ret
 
 

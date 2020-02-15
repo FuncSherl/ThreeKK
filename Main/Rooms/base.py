@@ -150,7 +150,7 @@ class base:
         for ind,i in enumerate(self.socket_list):
             msg=Message.form_roundstart(ind, self.heros_list[ind], self.heros_instance[ind].cards, startid, reply=False)
             i.send(msg)
-        self.heros_instance[startid].on_roundstart()
+        self.heros_instance[startid].round_start()
     
     
     
