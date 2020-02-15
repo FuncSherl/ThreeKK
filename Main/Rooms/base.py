@@ -13,6 +13,7 @@ class base:
         self.socket_list=socket_list        
         self.heros_list=[]
         self.heros_instance=[]
+        self.campid=list( range(len(self.socket_list)) )
         
         self.cards_pile=self.generate_cards()
         self.cards_drop=[]
