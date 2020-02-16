@@ -5,7 +5,7 @@ Created on 2020年2月12日
 @author: sherl
 '''
 import socket
-import sys
+import sys,json
 from Common import Config,Message
 import Cards
 
@@ -28,6 +28,11 @@ class base:
         self.cards=[]
         self.round_init()
         self.function_table=Message.make_msg2fun(self)
+        
+        self.armer=[]
+        self.shield=[]
+        self.horse_minus=[]
+        self.horse_plus=[]
         
         
     def round_init(self):
@@ -55,11 +60,20 @@ class base:
                 self.cards=self.cards[dropcnt:]
                 self.room.drop_cards(dropedcards)                
         return True
+    
+    def playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段'):
+        #告诉所有人谁正在选牌出
+        for ind,i in enumerate(self.room.socket_list):
+            msg=Message.form_askselect(ind, self.room.heros_list[ind], self.room.heros_instance[ind].cards, \
+                                       self.playerid, inform, cardtoselect, select_cnt=selectcnt, reply=(ind==self.playerid))
+            msg=json.dumps(msg)
+            i.send(msg)
+        return self.listen_distribute()
         
     ##############################################################################
     
     def listen_distribute(self, msgwant=None):
-        msg=self.room.send_recv(self.room.socket_list[self.mysocket])
+        msg=self.room.send_recv(self.mysocket)
         if msg:
             if msgwant and msgwant!=msg['msg_name']:return self.listen_distribute(msgwant)
             return self.function_table[msg['msg_name']](msg)
@@ -70,16 +84,33 @@ class base:
         
     def addcard(self, cards_list):
         self.cards.extend(cards_list)
+        
+    def cal_distance(self, startplayerid, endplayerid):
+        tep=abs(endplayerid-startplayerid)
+        dis=min(tep, len(self.room.socket_list)-tep  )
+        if self.room.heros_instance[startplayerid].horse_minus:  dis-=1
+        if self.room.heros_instance[endplayerid].horse_plus:  dis+=1
+        return dis
+    
+    def cal_armerlength(self, card):
+        #[cardid, color, num]
+        cardid=card[0]
+        tmax=Cards.class_list[cardid].scop
+        if self.armer:            
+            for i in self.armer:
+                tmax=max(tmax, Cards.class_list[i[0]].scop)
+        return tmax
+        
     
     
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息
     def on_heartbeat(self, msg):
-        return False
+        return True
     
     def on_playcard(self, msg):
         #重要处理，很多情况下这里因该收到该消息,即用户打出一张牌
         cards_ind=msg['third']
-        st=msg['start']
+        st=self.playerid #msg['start']
         ed=msg['end']
         for i in cards_ind:
             if i >=len(self.cards) or i<0:#下标越界
@@ -131,8 +162,8 @@ class base:
     
     def on_askselect(self, msg):
         #返回的msg中third中为用户选择，forth为选择的card，
-        if not msg['third'][0]:
-            return msg['third'][0]
+        if not msg['third'] or not msg['third'][0]:
+            return False
         return msg['forth']
         
 

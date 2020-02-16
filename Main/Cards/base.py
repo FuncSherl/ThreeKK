@@ -12,6 +12,8 @@ class base:
     active=None    #能主动被出牌吗[true, false, none]
     name='base'
     
+    scop=1  #手长 
+    
     def __init__(self):
         pass
         

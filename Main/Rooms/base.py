@@ -168,14 +168,10 @@ class base:
         self.heros_instance[startid].roundstart()        
         #以上完成回合开始时的准备工作
         
-    def playcardstart(self, startid):
-        for ind,i in enumerate(self.socket_list):
-            msg=Message.form_askselect(ind, self.heros_list[ind], self.heros_instance[ind].cards, startid, '出牌阶段', self.heros_instance[ind].cards, select_cnt=1, reply=(ind==startid))
-            msg=json.dumps(msg)
-            i.send(msg)
-            
-        while self.heros_instance[startid].listen_distribute():#出牌超时，出牌阶段结束
+    def playcardstart(self, startid):            
+        while self.heros_instance[startid].playcard(  self.heros_instance[startid].cards  ):#出牌超时，出牌阶段结束
             #新一轮出牌,每次循环都是代表一张牌已经处理完了，比如决斗相互出牌处理完了，这里等待出一张新牌
+            #这样则必须在下次循环前将该牌的相关处理完
             pass
             
             
