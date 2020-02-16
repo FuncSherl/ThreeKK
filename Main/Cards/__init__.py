@@ -33,4 +33,6 @@ modules_list=get_modules()
 class_list=[   getattr( importlib.import_module('.'+x, package_name), x  )    for x in modules_list]
 #print (class_list)
 #print (class_list[0].cards_num_color)
-# 下面根据统计的牌数目进行牌堆初始化
+
+#桃不应该是主动牌，应该为可以出的牌
+active_cards_ids=[x for x in range(len(class_list)) if (class_list[x].active!=False) ]

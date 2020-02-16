@@ -7,6 +7,7 @@ Created on 2020年2月12日
 import socket
 import sys
 from Common import Config,Message
+import Cards
 
 class base:
     name='base'
@@ -32,6 +33,8 @@ class base:
     def round_init(self):
         self.attack_cnt=0
         self.round_status=True  #回合未结束
+        self.cards_must_play=[]
+        self.cards_may_play=Cards.active_cards_ids
         
     #这里体现各种技能
     def roundstart(self):
@@ -75,11 +78,13 @@ class base:
     
     def on_playcard(self, msg):
         #重要处理，很多情况下这里因该收到该消息,即用户打出一张牌
-        cards=msg['third']
+        cards_ind=msg['third']
         st=msg['start']
         ed=msg['end']
-        
-        
+        for i in cards_ind:
+            if i >=len(self.cards) or i<0:#下标越界
+                return False
+            
         
         return False
     

@@ -8,11 +8,14 @@ import Persons
 import Persons.base as base
 
 class person_zhangfei(base.base):
-    def On_game_init(self):
-        pass
+    name='base'
+    describ='base class'
     
-    def On_round_init(self):
-        pass
+    describ_skill1=''
+    describ_skill2=''
+    
+    blood=4
+    
     
     
 

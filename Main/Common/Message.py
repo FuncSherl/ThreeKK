@@ -71,6 +71,7 @@ def form_askselect(myid, myheroid, mycards, end, informmsg, cardstoselect, selec
                     third=informmsg,forth=cardstoselect, fifth=select_cnt, reply=reply)
     
 def form_playcard(myid, myheroid, mycards, start, end, cards_played, reply=True):
+    #这里cards_played应该为list，其中每个代表手牌的下标  eg:[1,3]
     return form_msg(msg_types[1], myid=myid, myhero=myheroid, mycards=mycards, start=start, end=end, third=cards_played, reply=reply)
 
 
