@@ -57,15 +57,21 @@ def form_getcard(myid, myheroid,mycards, end, start, cards, reply=False):
 def form_roundstart(myid, myheroid, mycards, end ,reply=False):#周知动作，每个玩家都应知道谁的回合开始，end指明开始回合的主体 
     return form_msg(msg_types[4], myid=myid, myhero=myheroid,mycards=mycards, end=end, start=end, reply=reply)
 
+def form_roundend(myid, myheroid, mycards, end ,reply=False):#周知动作，每个玩家都应知道谁的回合结束，end指明主体 
+    return form_msg(msg_types[5], myid=myid, myhero=myheroid,mycards=mycards, end=end, start=end, reply=reply)
+
 def form_gameinited(myid, myheroid, mycards ,herolist, reply=False):#游戏初始化完成的人物和牌信息声明 ，同pickhero
     return form_msg(msg_types[12], myid=myid, myhero=myheroid, mycards=mycards, third=herolist, reply=reply)
 
 def form_roundend_dropcard(myid, myheroid, mycards, end, dropcnt, reply=True):#回合结束弃牌阶段，同roundstart
     return form_msg(msg_types[13], myid=myid, myhero=myheroid, mycards=mycards, start=end ,end=end, third=dropcnt, reply=reply)
 
-def form_askselect(myid, myheroid, mycards, end, informmsg, reply=True):
-    return form_msg(msg_types[14], myid=myid, myhero=myheroid, mycards=mycards, start=end ,end=end, third=informmsg, reply=reply)
-
+def form_askselect(myid, myheroid, mycards, end, informmsg, cardstoselect, select_cnt=1,reply=True):
+    return form_msg(msg_types[14], myid=myid, myhero=myheroid, mycards=mycards, start=end ,end=end, \
+                    third=informmsg,forth=cardstoselect, fifth=select_cnt, reply=reply)
+    
+def form_playcard(myid, myheroid, mycards, start, end, cards_played, reply=True):
+    return form_msg(msg_types[1], myid=myid, myhero=myheroid, mycards=mycards, start=start, end=end, third=cards_played, reply=reply)
 
 
 if __name__ == '__main__':

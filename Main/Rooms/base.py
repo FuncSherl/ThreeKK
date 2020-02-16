@@ -159,23 +159,37 @@ class base:
             i.send(msg)
         self.heros_instance[end].addcard(cards_tep)
         
+    ############################################################################################
     
-    def on_roundstart(self, startid):
-        for ind,i in enumerate(self.socket_list):
-            msg=Message.form_roundstart(ind, self.heros_list[ind], self.heros_instance[ind].cards, startid, reply=False)
-            msg=json.dumps(msg)
-            i.send(msg)
-        self.heros_instance[startid].round_start()        
+    def roundstart(self, startid):
+        msg=Message.form_roundstart(None, None, None, startid, reply=False)
+        self.send_msg_to_all(msg)
+        
+        self.heros_instance[startid].roundstart()        
         #以上完成回合开始时的准备工作
         
-        while self.heros_instance[startid].round_status:
-            #新一轮出牌
-            msg=self.send_recv(self.socket_list[startid])
-            if not msg: #出牌超时，判定回合结束
-                self.heros_instance[startid].on_roundend()
-                break
+    def playcardstart(self, startid):
+        for ind,i in enumerate(self.socket_list):
+            msg=Message.form_askselect(ind, self.heros_list[ind], self.heros_instance[ind].cards, startid, '出牌阶段', self.heros_instance[ind].cards, select_cnt=1, reply=(ind==startid))
+            msg=json.dumps(msg)
+            i.send(msg)
             
-                
+        while self.heros_instance[startid].listen_distribute():#出牌超时，出牌阶段结束
+            #新一轮出牌,每次循环都是代表一张牌已经处理完了，比如决斗相互出牌处理完了，这里等待出一张新牌
+            pass
+            
+            
+            
+    def roundend(self, startid):
+        msg=Message.form_roundend(None, None, None, startid, reply=False)
+        self.send_msg_to_all(msg)
+        self.heros_instance[startid].roundend()
+        
+        
+    def gamestatus_judge(self):
+        tep=[self.campid[x] for x in range(len(self.heros_instance)) if (self.heros_instance[x].alive)]
+        if max(tep)==min(tep):
+            self.game_status=False
     
     
     
@@ -188,8 +202,11 @@ class base:
         
         st=0
         while self.game_status:
-            if self.heros_instance[st].alive: self.on_roundstart(st)
+            if self.heros_instance[st].alive: self.roundstart(st)
+            if self.heros_instance[st].alive: self.playcardstart(st)
+            if self.heros_instance[st].alive: self.roundend(st)
             
+            self.gamestatus_judge()
             st+=1
             st%=len(self.socket_list)
             
