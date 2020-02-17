@@ -4,6 +4,7 @@ Created on 2020年2月14日
 
 @author: sherl
 '''
+import Persons
 
 
 
@@ -16,15 +17,16 @@ class base:
     
     def __init__(self):
         pass
-        
-    def cal_active(self, person):
-        tep=self.active
-        if self.active is None:#不确定,以桃的处理为例
+    
+    @classmethod
+    def cal_active(cls, person):
+        tep=cls.active
+        if tep is None:#不确定,以桃的处理为例
             if person.health<person.blood:
                 tep= True
         return tep
 
-
+    
 
 
 
@@ -37,4 +39,4 @@ class base:
 
 
 if __name__ == '__main__':
-    pass
+    tep=base()
