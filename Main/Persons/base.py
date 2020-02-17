@@ -38,8 +38,7 @@ class base:
     def round_init(self):
         self.attack_cnt=0
         self.round_status=True  #回合未结束
-        self.cards_must_play=[]
-        self.cards_may_play=Cards.active_cards_ids
+        self.cards_may_play=[]
         
     #这里体现各种技能
     def roundstart(self):
@@ -68,6 +67,7 @@ class base:
                                        self.playerid, inform, cardtoselect, select_cnt=selectcnt, reply=(ind==self.playerid))
             msg=json.dumps(msg)
             i.send(msg)
+        
         return self.listen_distribute()
         
     ##############################################################################

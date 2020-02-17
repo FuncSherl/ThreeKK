@@ -17,7 +17,12 @@ class base:
     def __init__(self):
         pass
         
-
+    def cal_active(self, person):
+        tep=self.active
+        if self.active is None:#不确定,以桃的处理为例
+            if person.health<person.blood:
+                tep= True
+        return tep
 
 
 
