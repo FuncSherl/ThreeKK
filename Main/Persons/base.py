@@ -25,20 +25,33 @@ class base:
         
         self.alive=True
         self.health=self.blood
-        self.cards=[]
+        self.cards=[] #[[], ]
         self.round_init()
         self.function_table=Message.make_msg2fun(self)
+        
+        self.cards_may_play=[]
+        self.cards_num_play=1
+        self.cards_inform=''
         
         self.armer=[]
         self.shield=[]
         self.horse_minus=[]
         self.horse_plus=[]
         
+        #self.all_the_cards_holders=[self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus]
+        
         
     def round_init(self):
         self.attack_cnt=0
         self.round_status=True  #回合未结束
-        self.cards_may_play=[]
+        
+        self.round_additional_damage_attack=0#本回合的附加伤害
+        self.next_additional_damage_attack=0#下一次基本牌的附加伤害
+        
+        self.round_additional_damage_skill=0#本回合技能附加伤害
+        self.next_additional_damage_skill=0#下一次技能附加伤害
+        
+        
         
     #这里体现各种技能
     def roundstart(self):
@@ -67,8 +80,14 @@ class base:
                                        self.playerid, inform, cardtoselect, select_cnt=selectcnt, reply=(ind==self.playerid))
             msg=json.dumps(msg)
             i.send(msg)
-        
+        self.cards_may_play=cardtoselect
+        self.cards_num_play=selectcnt
+        self.cards_inform=inform
         return self.listen_distribute()
+    
+    def activecards(self):
+        return [i   for i in self.cards if Cards.class_list[i[0]].cal_active(self)]
+            
         
     ##############################################################################
     
@@ -85,6 +104,14 @@ class base:
     def addcard(self, cards_list):
         self.cards.extend(cards_list)
         
+    def dropcard(self, cards_list):
+        self.cards=[x for x in self.cards if (x not in cards_list)]
+        self.armer=[x for x in self.armer if (x not in cards_list)]
+        self.shield=[x for x in self.shield if (x not in cards_list)]
+        self.horse_minus=[x for x in self.horse_minus if (x not in cards_list)]
+        self.horse_plus=[x for x in self.horse_plus if (x not in cards_list)]
+        #for i in cards_list: self.cards.remove(i)  #出牌了
+        
     def cal_distance(self, startplayerid, endplayerid):
         tep=abs(endplayerid-startplayerid)
         dis=min(tep, len(self.room.socket_list)-tep  )
@@ -96,7 +123,7 @@ class base:
         #[cardid, color, num]
         cardid=card[0]
         tmax=Cards.class_list[cardid].scop
-        if self.armer:            
+        if self.armer and Cards.class_list[cardid].name=='杀':            
             for i in self.armer:
                 tmax=max(tmax, Cards.class_list[i[0]].scop)
         return tmax
@@ -109,15 +136,25 @@ class base:
     
     def on_playcard(self, msg):
         #重要处理，很多情况下这里因该收到该消息,即用户打出一张牌
-        cards_ind=msg['third']
+        cards=msg['third']
         st=self.playerid #msg['start']
         ed=msg['end']
-        for i in cards_ind:
-            if i >=len(self.cards) or i<0:#下标越界
-                return False
-            
+        if len(cards)!=self.cards_num_play: return  self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform)
+        for i in cards:
+            if i not in self.cards_may_play:return False    #return self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform)
+        #到这说明出牌没问题
+        self.dropcard(cards)
+        self.room.drop_cards(cards) #牌进入弃牌堆 
         
-        return False
+        msg=Message.form_playcard(0, 0, 0, st, ed, cards, reply=False)  #通知所有人谁向谁出了牌
+        self.room.send_msg_to_all(msg)
+        
+        for i in ed:
+            for j in cards:
+                #将控制权交给该牌
+                Cards.class_list[ j[0] ].on_be_playedto(self, self.room.heros_instance[i])
+        #不管如何应对，这里出牌是成功的
+        return True
     
     def on_judgement(self, msg):
         return False

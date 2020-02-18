@@ -13,5 +13,6 @@ Cardsforinit=4  #一开始每个人多少牌
 Cardeachround=2 #默认每回合起多少牌
 
 Card_color_enum=['spade', 'club','heart', 'diamond'] #黑桃、梅花、红心、方片
+Card_type_enum=['basic', 'skill']
 Card_num_max=13
 Card_num_min=1

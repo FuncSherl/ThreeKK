@@ -11,6 +11,9 @@ class card_attack(base.base):
     cards_num_color=[7,14,3,6]  #黑桃、梅花、红心、方片
     active=True    #能主动出牌吗[true, false, none]
     name='杀'
+    against_names=['闪']
+    
+    scop=1  #手长 
     
     def __init__(self):
         #super().__init__()
