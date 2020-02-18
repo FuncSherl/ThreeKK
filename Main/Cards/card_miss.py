@@ -15,7 +15,10 @@ class card_miss(base.base):
     def __init__(self):
         #super().__init__()
         pass
-
+    
+    @classmethod
+    def on_be_playedto(cls, person_start, person_end):
+        return True
 
 
 

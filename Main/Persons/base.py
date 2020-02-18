@@ -38,7 +38,7 @@ class base:
         self.horse_minus=[]
         self.horse_plus=[]
         
-        #self.all_the_cards_holders=[self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus]
+        self.all_the_cards_holders=[self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus]
         
         
     def round_init(self):
@@ -85,6 +85,27 @@ class base:
         self.cards_inform=inform
         return self.listen_distribute()
     
+    def drophealth(self, person_start, damage):
+        #掉血响应
+        if person_start.dodamage(self, damage):
+            self.health-=damage
+            if self.health<=0:
+                self.ask_for_save()
+            #后面如果还血量不够，就死亡
+            if self.health<=0:
+                self.ondeath()
+    
+    def dodamage(self, person_end, damage):
+        #return true表示person_end可以因掉血发动技能
+        
+        return True
+    
+    def ondeath(self):
+        self.alive=False
+        for i in self.all_the_cards_holders:
+            self.room.drop_cards(i)
+    
+    
     def activecards(self):
         return [i   for i in self.cards if Cards.class_list[i[0]].cal_active(self)]
             
@@ -127,7 +148,10 @@ class base:
             for i in self.armer:
                 tmax=max(tmax, Cards.class_list[i[0]].scop)
         return tmax
-        
+    
+    
+    def ask_for_save(self):
+        pass
     
     
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息
@@ -152,7 +176,16 @@ class base:
         for i in ed:
             for j in cards:
                 #将控制权交给该牌
-                Cards.class_list[ j[0] ].on_be_playedto(self, self.room.heros_instance[i])
+                tesu=Cards.class_list[ j[0] ].on_be_playedto(self, self.room.heros_instance[i])
+                #命中
+                if not tesu: 
+                    for k in self.armer:
+                        # 武器牌的命中效果不一样,这里添加额外伤害什么的
+                        Cards.class_list[ k[0] ].on_hit_player( self, self.room.heros_instance[i])
+                    #以杀为例，这里命中时造成伤害
+                    Cards.class_list[ j[0] ].on_hit_player( self, self.room.heros_instance[i])
+                    break  #命中一个人一次得了 
+                
         #不管如何应对，这里出牌是成功的
         return True
     
