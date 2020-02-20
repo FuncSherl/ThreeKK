@@ -67,7 +67,7 @@ class base:
             for ind,i in enumerate(self.room.socket_list):
                 msg=Message.form_roundend_dropcard(ind, self.room.heros_list[ind], self.room.heros_instance[ind].cards, self.playerid, dropcnt, reply=(self.playerid==ind))
                 i.send(msg)
-            if not self.listen_distribute(Message.msg_types[13]):
+            if not self.listen_distribute([Message.msg_types[13]]):
                 dropedcards=self.cards[:dropcnt]
                 self.cards=self.cards[dropcnt:]
                 self.room.drop_cards(dropedcards)                
@@ -83,7 +83,7 @@ class base:
         self.cards_may_play=cardtoselect
         self.cards_num_play=selectcnt
         self.cards_inform=inform
-        return self.listen_distribute()
+        return self.listen_distribute([Message.msg_types[1], Message.msg_types[14]])
     
     def drophealth(self, person_start, damage):
         #掉血响应
@@ -112,10 +112,10 @@ class base:
         
     ##############################################################################
     
-    def listen_distribute(self, msgwant=None):
+    def listen_distribute(self, msgwant=[]):
         msg=self.room.send_recv(self.mysocket)
         if msg:
-            if msgwant and msgwant!=msg['msg_name']:return self.listen_distribute(msgwant)
+            if msgwant and msg['msg_name'] not in msgwant: return self.listen_distribute(msgwant)
             return self.function_table[msg['msg_name']](msg)
         else:
             return None
