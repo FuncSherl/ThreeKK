@@ -94,9 +94,15 @@ class base:
             #后面如果还血量不够，就死亡
             if self.health<=0:
                 self.ondeath()
+            
+            
     
-    def dodamage(self, person_end, damage):
+    def before_dodamage(self, person_end, damage):
         #return true表示person_end可以因掉血发动技能
+        
+        return True
+    
+    def after_dodamage(self, person_end, damage):
         
         return True
     
@@ -167,6 +173,8 @@ class base:
         for i in cards:
             if i not in self.cards_may_play:return False    #return self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform)
         #到这说明出牌没问题
+        
+        
         self.dropcard(cards)
         self.room.drop_cards(cards) #牌进入弃牌堆 
         
@@ -181,7 +189,8 @@ class base:
                 if not tesu: 
                     for k in self.armer:
                         # 武器牌的命中效果不一样,这里添加额外伤害什么的
-                        Cards.class_list[ k[0] ].on_hit_player( self, self.room.heros_instance[i])
+                        arm_resu=Cards.class_list[ k[0] ].on_hit_player( self, self.room.heros_instance[i])
+                    if arm_resu: pass
                     #以杀为例，这里命中时造成伤害
                     Cards.class_list[ j[0] ].on_hit_player( self, self.room.heros_instance[i])
                     break  #命中一个人一次得了 
@@ -232,6 +241,7 @@ class base:
     
     def on_askselect(self, msg):
         #返回的msg中third中为用户选择，forth为选择的card，
+        #return False
         if not msg['third'] or not msg['third'][0]:
             return False
         return msg['forth']

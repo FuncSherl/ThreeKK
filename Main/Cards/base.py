@@ -34,7 +34,7 @@ class base:
 
     @classmethod
     def on_be_playedto(cls, person_start, person_end):
-        if not cls.against_names: return True  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
+        #if not cls.against_names: return True  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
         #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
         cards_to_play=[]
         for i in person_end.cards:
