@@ -91,11 +91,13 @@ class base:
 
         return ret
     
-    def send_msg_to_all(self, msg):
+    def send_msg_to_all(self, msg, replylist=[]):
         for ind,i in enumerate(self.socket_list):
             msg['myid']=ind
             msg['myhero']=self.heros_list[ind]
             msg['mycards']=self.heros_instance[ind].cards
+            #msg['reply']=False
+            if ind in replylist: msg['reply']=True
             msg=json.dumps(msg)
             i.send(msg)        
             

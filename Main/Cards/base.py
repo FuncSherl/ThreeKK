@@ -11,11 +11,9 @@ from Common import Config,Message
 
 class base:
     cards_num_color=[0,0,0,0] #黑桃、梅花、红心、方片
-    active=None    #能主动被出牌吗[true, false, none]
     name='base'
     type=Config.Card_type_enum[0] #默认是基本牌
     against_names=[]
-    target_nums=1  #能指定几个目标
     damage=0
     
     scop=1  #手长 
@@ -23,6 +21,8 @@ class base:
     def __init__(self):
         pass
     
+    
+    #以下必须由子类复现，凸显子类特性 
     @classmethod
     def cal_active(cls, person):
         #该person是否能够出该类牌  person为一个实例 
@@ -30,8 +30,18 @@ class base:
             if person.health<person.blood:
                 return  True
             return False
-        return cls.active
+        return True
+    
+    @classmethod
+    def cal_targets(cls, startperson):
+        #能指定naxie目标,返回目标ids,桃需要重写
+        #return [startperson.playerid]  #仅自己
+        return list( range(len(startperson.room.socket_list) ) ).remove(startperson.playerid)  #除了自己
+        return list( range(len(startperson.room.socket_list) ) )  #所有人 
 
+
+
+#############################################################
     @classmethod
     def on_be_playedto(cls, person_start, person_end):
         #if not cls.against_names: return True  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈

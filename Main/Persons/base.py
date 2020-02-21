@@ -27,11 +27,13 @@ class base:
         self.health=self.blood
         self.cards=[] #[[], ]
         self.round_init()
+        self.round_status=False
         self.function_table=Message.make_msg2fun(self)
         
         self.cards_may_play=[]
-        self.cards_num_play=1
+        self.cards_num_play=[1]
         self.cards_inform=''
+        self.cards_end_may=[]
         
         self.armer=[]
         self.shield=[]
@@ -64,25 +66,27 @@ class base:
             #启动弃牌
             dropcnt=len(self.cards)-self.health
             
-            for ind,i in enumerate(self.room.socket_list):
-                msg=Message.form_roundend_dropcard(ind, self.room.heros_list[ind], self.room.heros_instance[ind].cards, self.playerid, dropcnt, reply=(self.playerid==ind))
-                i.send(msg)
+            msg=Message.form_roundend_dropcard(0, 0, 0, self.playerid, dropcnt, reply=False)
+            self.room.send_msg_to_all(msg, replylist=[self.playerid])
+                
             if not self.listen_distribute([Message.msg_types[13]]):
                 dropedcards=self.cards[:dropcnt]
                 self.cards=self.cards[dropcnt:]
-                self.room.drop_cards(dropedcards)                
+                self.room.drop_cards(dropedcards)     
+        self.round_status=False           
         return True
     
-    def playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段'):
-        #告诉所有人谁正在选牌出
-        for ind,i in enumerate(self.room.socket_list):
-            msg=Message.form_askselect(ind, self.room.heros_list[ind], self.room.heros_instance[ind].cards, \
-                                       self.playerid, inform, cardtoselect, select_cnt=selectcnt, reply=(ind==self.playerid))
-            msg=json.dumps(msg)
-            i.send(msg)
+    def playcard(self, cardtoselect, selectcnt=[1], inform='出牌阶段', end=[]):
+        #告诉所有人谁正在选牌出,其中end为None表示由玩家选择目标，目标合理性判断由牌+玩家决定；如果有list，则目标必须在end的list中 
+        msg=Message.form_askselect(0, 0, 0, self.playerid, end, inform, cardtoselect, select_cnt=selectcnt, reply=False)
+        self.room.send_msg_to_all(msg, replylist=[self.playerid])
+        
+            
         self.cards_may_play=cardtoselect
         self.cards_num_play=selectcnt
         self.cards_inform=inform
+        self.cards_end_may=end
+        
         return self.listen_distribute([Message.msg_types[1], Message.msg_types[14]])
     
     def drophealth(self, person_start, damage):
@@ -169,9 +173,18 @@ class base:
         cards=msg['third']
         st=self.playerid #msg['start']
         ed=msg['end']
-        if len(cards)!=self.cards_num_play: return  self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform)
+        if len(cards) not in self.cards_num_play: return  self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform, self.cards_end_may)
         for i in cards:
-            if i not in self.cards_may_play:return False    #return self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform)
+            if i not in self.cards_may_play:return False    #return self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform, self.cards_end_may)
+            
+        if not self.cards_end_may:#判定牌的目标合理性
+            for i in ed:
+                for j in cards:
+                    if i not in Cards.class_list[ j[0] ].cal_targets: return False            
+        else:
+            for i in ed: 
+                if i not in self.cards_end_may: return False
+            
         #到这说明出牌没问题
         
         
