@@ -33,18 +33,19 @@ class base:
         self.cards_may_play=[]
         self.cards_num_play=[1]
         self.cards_inform=''
-        self.cards_end_may=[]
+        self.cards_end_may=None
         
         self.armer=[]
         self.shield=[]
         self.horse_minus=[]
         self.horse_plus=[]
         
-        self.all_the_cards_holders=[self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus]
+        self.all_the_cards_holders=lambda :[self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus]
         
         
     def round_init(self):
         self.attack_cnt=0
+        self.failer_cnt=0
         self.round_status=True  #回合未结束
         
         self.round_additional_damage_attack=0#本回合的附加伤害
@@ -76,7 +77,7 @@ class base:
         self.round_status=False           
         return True
     
-    def playcard(self, cardtoselect, selectcnt=[1], inform='出牌阶段', end=[]):
+    def playcard(self, cardtoselect, selectcnt=[1], inform='出牌阶段', end=None):
         #告诉所有人谁正在选牌出,其中end为None表示由玩家选择目标，目标合理性判断由牌+玩家决定；如果有list，则目标必须在end的list中 
         msg=Message.form_askselect(0, 0, 0, self.playerid, end, inform, cardtoselect, select_cnt=selectcnt, reply=False)
         self.room.send_msg_to_all(msg, replylist=[self.playerid])
@@ -112,12 +113,18 @@ class base:
     
     def ondeath(self):
         self.alive=False
-        for i in self.all_the_cards_holders:
+        for i in self.all_the_cards_holders():
             self.room.drop_cards(i)
     
     
     def activecards(self):
-        return [i   for i in self.cards if Cards.class_list[i[0]].cal_active(self)]
+        ret=[]
+        for i in self.cards:
+            if Cards.class_list[i[0]].cal_active(self):
+                #张飞可不用下面这句判断 
+                if Cards.class_list[i[0]].name=='杀' and self.attack_cnt>=self.room.allow_attack_cnt:continue
+                ret.append(i)
+        return ret
             
         
     ##############################################################################
@@ -136,11 +143,9 @@ class base:
         self.cards.extend(cards_list)
         
     def dropcard(self, cards_list):
-        self.cards=[x for x in self.cards if (x not in cards_list)]
-        self.armer=[x for x in self.armer if (x not in cards_list)]
-        self.shield=[x for x in self.shield if (x not in cards_list)]
-        self.horse_minus=[x for x in self.horse_minus if (x not in cards_list)]
-        self.horse_plus=[x for x in self.horse_plus if (x not in cards_list)]
+        for i in cards_list:
+            for j in self.all_the_cards_holders():
+                if i in j: j.remove(i)
         #for i in cards_list: self.cards.remove(i)  #出牌了
         
     def cal_distance(self, startplayerid, endplayerid):
@@ -168,28 +173,67 @@ class base:
     def on_heartbeat(self, msg):
         return True
     
-    def on_playcard(self, msg):
-        #重要处理，很多情况下这里因该收到该消息,即用户打出一张牌
-        cards=msg['third']
-        st=self.playerid #msg['start']
-        ed=msg['end']
-        if len(cards) not in self.cards_num_play: return  self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform, self.cards_end_may)
-        for i in cards:
-            if i not in self.cards_may_play:return False    #return self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform, self.cards_end_may)
+    def judge_playcard(self, cards, ed):
+        #当收到玩家打出一张牌时，根据出牌时的状态判断该牌出的是否合理 
+        if len(cards) not in self.cards_num_play:  return False
             
-        if not self.cards_end_may:#判定牌的目标合理性
+        for i in cards:
+            if i not in self.cards_may_play:       return False
+            
+        if self.cards_end_may is None:#判定牌的目标合理性,None表示根据牌来定，list则目标必须在里面 
             for i in ed:
                 for j in cards:
                     if i not in Cards.class_list[ j[0] ].cal_targets: return False            
         else:
+            return ed==self.cards_end_may
+            '''
             for i in ed: 
                 if i not in self.cards_end_may: return False
-            
+            '''
+        
+        return True
+    
+    def playcard_drop(self, cards):
+        #当该玩家打出牌时，该函数负责处理弃牌等操作，基本牌直接弃牌，装备牌可以替换
+        dropcards=[]
+        for i in cards:
+            tep=Cards.class_list[ i[0] ].type
+            if tep==Config.Card_type_enum[0] or tep==Config.Card_type_enum[1]:#['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
+                dropcards.append(i)                
+            elif tep==Config.Card_type_enum[2]:                
+                self.armer.append(i)
+                if len(self.armer)>self.room.allow_armer: dropcards.extend(self.armer[:-self.room.allow_armer])
+            elif tep==Config.Card_type_enum[3]:                
+                self.shield.append(i)
+                if len(self.shield)>self.room.allow_shield: dropcards.extend(self.shield[:-self.room.allow_shield])
+            elif tep==Config.Card_type_enum[4]:
+                dropcards.extend(self.horse_minus)
+                self.horse_minus=[i]
+            elif tep==Config.Card_type_enum[5]:
+                dropcards.extend(self.horse_plus)
+                self.horse_plus=[i]
+            else:
+                print('error:unkonwn card type')
+        self.dropcard(dropcards)
+        self.room.drop_cards(dropcards) #牌进入弃牌堆
+
+                
+                
+    
+    def on_playcard(self, msg):
+        #重要处理，很多情况下这里因该收到该消息,即用户打出一张牌
+        cards=msg['third']
+        st=self.playerid #msg['start']
+        ed=msg['end']        
+        
+        if not self.judge_playcard(cards, ed): 
+            self.failer_cnt+=1  #限制出牌失败次数
+            if self.failer_cnt>=Config.FailerCnt:return False
+            return  self.playcard(self.cards_may_play, self.cards_num_play, self.cards_inform, self.cards_end_may)            
         #到这说明出牌没问题
-        
-        
-        self.dropcard(cards)
-        self.room.drop_cards(cards) #牌进入弃牌堆 
+        #self.dropcard(cards)
+        #self.room.drop_cards(cards) #牌进入弃牌堆 
+        self.playcard_drop(cards)
         
         msg=Message.form_playcard(0, 0, 0, st, ed, cards, reply=False)  #通知所有人谁向谁出了牌
         self.room.send_msg_to_all(msg)

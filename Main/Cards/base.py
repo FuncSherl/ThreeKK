@@ -12,7 +12,7 @@ from Common import Config,Message
 class base:
     cards_num_color=[0,0,0,0] #黑桃、梅花、红心、方片
     name='base'
-    type=Config.Card_type_enum[0] #默认是基本牌
+    type=Config.Card_type_enum[0] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
     against_names=[]
     damage=0
     
@@ -51,7 +51,7 @@ class base:
             if Cards.class_list[ i[0] ].name in cls.against_names:
                 cards_to_play.append(i)
         #能出的牌都已经准备好了
-        tep= person_end.playcard(cards_to_play, inform='%s对您使用了%s，是否使用 %s'%(person_start.name, cls.name, '或'.join(cls.against_names)))
+        tep= person_end.playcard(cards_to_play, inform='%s对您使用了%s，是否使用 %s'%(person_start.name, cls.name, '或'.join(cls.against_names)), end=[])
         if not tep: return tep
         
         

@@ -19,6 +19,12 @@ class base:
         self.cards_drop=[]
         
         self.game_status=True
+        self.init_roomset()#加载房间设置 
+        
+    def init_roomset(self):
+        self.allow_attack_cnt=1  #本房间的游戏方式，允许出几张杀，体现房间特性
+        self.allow_armer=1  #允许几个武器
+        self.allow_shield=1 #allow how many shield
         
     def get_cards(self, cnt=1):
         #当发牌时
