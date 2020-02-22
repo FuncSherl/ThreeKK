@@ -31,7 +31,7 @@ class base:
         self.function_table=Message.make_msg2fun(self)
         
         self.cards_may_play=[]
-        self.cards_num_play=[1]
+        self.cards_num_play=1
         self.cards_inform=''
         self.cards_end_may=None
         
@@ -77,18 +77,6 @@ class base:
         self.round_status=False           
         return True
     
-    def playcard(self, cardtoselect, selectcnt=[1], inform='出牌阶段', end=None):
-        #告诉所有人谁正在选牌出,其中end为None表示由玩家选择目标，目标合理性判断由牌+玩家决定；如果有list，则目标必须在end的list中 
-        msg=Message.form_askselect(0, 0, 0, self.playerid, end, inform, cardtoselect, select_cnt=selectcnt, reply=False)
-        self.room.send_msg_to_all(msg, replylist=[self.playerid])
-        
-            
-        self.cards_may_play=cardtoselect
-        self.cards_num_play=selectcnt
-        self.cards_inform=inform
-        self.cards_end_may=end
-        
-        return self.listen_distribute([Message.msg_types[1], Message.msg_types[14]])
     
     def drophealth(self, person_start, damage):
         #掉血响应
@@ -118,6 +106,7 @@ class base:
     
     
     def activecards(self):
+        #当前的牌中有哪些是可以主动出的
         ret=[]
         for i in self.cards:
             if Cards.class_list[i[0]].cal_active(self):
@@ -137,7 +126,18 @@ class base:
         else:
             return None
     
+    def playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None):
+        #告诉所有人谁正在选牌出,其中end为None表示由玩家选择目标，目标合理性判断由牌+玩家决定；如果有list，则目标必须在end的list中 
+        msg=Message.form_askselect(0, 0, 0, self.playerid, end, inform, cardtoselect, select_cnt=selectcnt, reply=False)
+        self.room.send_msg_to_all(msg, replylist=[self.playerid])
         
+            
+        self.cards_may_play=cardtoselect
+        self.cards_num_play=selectcnt
+        self.cards_inform=inform
+        self.cards_end_may=end
+        
+        return self.listen_distribute([Message.msg_types[1], Message.msg_types[14]])
         
     def addcard(self, cards_list):
         self.cards.extend(cards_list)
@@ -175,12 +175,12 @@ class base:
     
     def judge_playcard(self, cards, ed):
         #当收到玩家打出一张牌时，根据出牌时的状态判断该牌出的是否合理 
-        if len(cards) not in self.cards_num_play:  return False
+        if len(cards) != self.cards_num_play:  return False
             
         for i in cards:
             if i not in self.cards_may_play:       return False
             
-        if self.cards_end_may is None:#判定牌的目标合理性,None表示根据牌来定，list则目标必须在里面 
+        if self.cards_end_may is None:#判定牌的目标合理性,None表示根据牌来定，list则目标必须在相等
             for i in ed:
                 for j in cards:
                     if i not in Cards.class_list[ j[0] ].cal_targets: return False            
