@@ -56,7 +56,7 @@ class base:
         self.next_additional_damage_skill=0#下一次技能附加伤害
         
         
-        
+    ##########################################################################################################
     #这里体现各种技能
     def roundstart(self):
         self.round_init()
@@ -80,9 +80,10 @@ class base:
     
     
     def drophealth(self, person_start, damage, card):
-        damage=self.ask_shield_before_damage(damage)
+        #如果before_dodamage-》before_damaged-》受伤-》after_dodamage-》after_damaged        
         #掉血响应
-        if person_start.dodamage(self, damage):
+        if person_start.before_dodamage(self, damage, card):
+            damage=self.before_damaged( person_start, damage, card)
             self.health-=damage
             if self.health<=0:
                 self.ask_for_save()
@@ -90,16 +91,33 @@ class base:
             if self.health<=0:
                 self.ondeath()
             
+            if person_start.after_dodamage(self, damage, card):
+                self.after_damaged(person_start, damage, card)
+    
+            
             
     
     def before_dodamage(self, person_end, damage, card):
-        #return true表示person_end可以因掉血发动技能
+        #
         
         return True
     
     def after_dodamage(self, person_end, damage, card):
         
         return True
+    
+    
+    #自己掉血时
+    def before_damaged(self, person_start, damage, card):
+        #return true表示person_end可以因掉血发动技能
+        return self.ask_shield_before_damage(damage)
+        
+    
+    def after_damaged(self, person_start, damage, card):
+        #掉血技能
+        
+        return True
+    
     
     def ondeath(self):
         self.alive=False
@@ -118,7 +136,7 @@ class base:
         return ret
             
         
-    ##############################################################################
+    ##############################################################################################################
     #以下为工具函数，每个类中相同，不必重写
     def listen_distribute(self, msgwant=[]):
         msg=self.room.send_recv(self.mysocket)
