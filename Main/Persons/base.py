@@ -78,6 +78,13 @@ class base:
         self.round_status=False           
         return True
     
+    def addhealth(self, person_start, health_add=1, card=None):
+        if self.health+health_add<self.blood:
+            self.health+=health_add
+        else:
+            self.health=self.blood
+        return True
+    
     
     def drophealth(self, person_start, damage, card):
         #如果before_dodamage-》before_damaged-》受伤-》after_dodamage-》after_damaged        
@@ -228,7 +235,7 @@ class base:
                     if tesu: break  #命中一次可以了
                 
         #不管如何应对，这里出牌是成功的
-        return True
+        return cards
         
         
     def addcard(self, cards_list):

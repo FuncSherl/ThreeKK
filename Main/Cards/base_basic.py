@@ -16,7 +16,7 @@ class base(Cards.base.base):
     against_names=[]
     damage=0
     active=True
-    scop=1  #手长 
+    scop=10  #手长 
     
     def __init__(self):
         pass

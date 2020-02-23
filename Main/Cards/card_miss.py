@@ -8,7 +8,7 @@ import Cards
 
 
 class card_miss(Cards.base_basic.base):
-    cards_num_color=[0,0,7,17]  #黑桃、梅花、红心、方片
+    cards_num_color=[0,0,3,12]  #黑桃、梅花、红心、方片
     active=False    #能主动被出牌吗
     name='闪'
     against_names=[]
