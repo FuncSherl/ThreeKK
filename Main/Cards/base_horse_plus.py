@@ -12,7 +12,7 @@ from Common import Config,Message
 class base:
     cards_num_color=[0,0,0,0] #黑桃、梅花、红心、方片
     name='base'
-    type=Config.Card_type_enum[0] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
+    type=Config.Card_type_enum[5] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
     against_names=[]
     damage=0
     active=True
@@ -30,7 +30,7 @@ class base:
             if person.health<person.blood:
                 return  True
             return False
-        return cls.active
+        return True
     
     @classmethod
     def cal_targets(cls, startperson, card=None):
@@ -44,12 +44,23 @@ class base:
 
 #############################################################
     @classmethod
-    def on_be_playedto(cls, person_start, person_end, card=None):
-        if not cls.against_names: return False  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
+    def on_be_playedto(cls, person_start, person_end_list, card=None):
+        if not cls.against_names: return True  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
         #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
-
+        for k in person_end_list:
+            cards_to_play=[]
+            for i in k.cards:
+                if Cards.class_list[ i[0] ].name in cls.against_names:
+                    cards_to_play.append(i)
+            #能出的牌都已经准备好了
+            #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=0, active=True):
+            tep= k.playcard(cards_to_play, inform='%s对您使用了%s，是否使用 %s'%(person_start.name, cls.name, '或'.join(cls.against_names)),\
+                             end=[], endnum=1, active=False)
+            if not tep: return tep
+        
+        
         #决斗的话需要后面换玩家，然后接着调用
-        return False
+        return True
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
@@ -60,31 +71,9 @@ class base:
         return person_end.drophealth(person_start, damage)
         
         
-        
-        
-    
-
-    ###############################################   shield speical
-    @classmethod
-    def on_attacked(cls, card):
-        #return 能否挡住
-        if Cards.class_list[card[0]].name=='杀':
-            if card[1]==0 or card[1]==1: return True
-        return False
-        
-    @classmethod
-    def on_damaged(cls, damage):
-        #return过了后的伤害值
-        return damage
 
 
-    ###################################################   armer special
-    def before_playcard(self, startperson, card=None):
-        #询问出牌前的装备判定
-        return True
 
-    def before_hit(self, startperson, endperson, card=None):
-        pass
 
 
 
@@ -95,14 +84,3 @@ class base:
 
 if __name__ == '__main__':
     tep=base()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    

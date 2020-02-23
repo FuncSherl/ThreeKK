@@ -177,7 +177,8 @@ class base:
         #以上完成回合开始时的准备工作
         
     def playcardstart(self, startid):            
-        while self.heros_instance[startid].playcard(self.heros_instance[startid].activecards() ):#出牌超时，出牌阶段结束
+        #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, 
+        while self.heros_instance[startid].playcard(self.heros_instance[startid].activecards()):#出牌超时，出牌阶段结束
             #新一轮出牌,每次循环都是代表一张牌已经处理完了，比如决斗相互出牌处理完了，这里等待出一张新牌
             #这样则必须在下次循环前将该牌的相关处理完
             pass
