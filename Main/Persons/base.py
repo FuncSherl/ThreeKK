@@ -15,6 +15,10 @@ class base:
     
     describ_skill1=''
     describ_skill2=''
+    describ_skill3=''
+    describ_skill4=''
+    
+    describ_skill_list=[describ_skill1, describ_skill2, describ_skill3, describ_skill4]
     
     blood=4
     
