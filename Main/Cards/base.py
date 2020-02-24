@@ -45,10 +45,9 @@ class base:
 #############################################################
     @classmethod
     def on_be_playedto(cls, person_start, person_end, card=None):
-        if not cls.against_names: return False  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
+        #if not cls.against_names: return False  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
         #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
-
-        #决斗的话需要后面换玩家，然后接着调用
+        if not cls.against_names: return cls.on_hit_player(cls,  person_start, person_end, card)
         return False
     
     @classmethod
@@ -59,8 +58,18 @@ class base:
         
         return person_end.drophealth(person_start, damage)
         
-        
-        
+    @classmethod
+    def on_ask_response(cls, person_start, person_end):
+        #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
+        cards_to_play=[]
+        for i in person_end.cards:
+            if Cards.class_list[ i[0] ].name in cls.against_names:
+                cards_to_play.append(i)
+        #能出的牌都已经准备好了
+        #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=0, active=True):
+        tep= person_end.playcard(cards_to_play, inform='%s对您使用了%s，是否使用 %s'%(person_start.name, cls.name, '或'.join(cls.against_names)),\
+                             end=[], endnum=0, active=False, go_on=False)
+        return tep
         
     
 

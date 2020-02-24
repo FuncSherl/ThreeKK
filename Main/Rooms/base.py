@@ -25,6 +25,7 @@ class base:
         self.allow_attack_cnt=1  #本房间的游戏方式，允许出几张杀，体现房间特性
         self.allow_armer=1  #允许几个武器
         self.allow_shield=1 #allow how many shield
+        self.allow_horse=1
         
     def get_cards(self, cnt=1):
         #当发牌时
@@ -59,7 +60,7 @@ class base:
         #print (kep_card_colors)
         ret=[]
         for i in kep_card_colors:
-            random.shuffle(i)
+            #random.shuffle(i)
             for indj,j in enumerate(i):
                 tep_ind=indj%(Config.Card_num_max-Config.Card_num_min+1)+Config.Card_num_min
                 j.append(tep_ind)

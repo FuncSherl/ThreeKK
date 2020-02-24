@@ -53,15 +53,10 @@ class card_juedou(Cards.base_skill.base):
             return True
         
         #决斗的话需要后面换玩家，然后接着调用
-        if cls.against_names[0] in [Cards.class_list[x[0]].name for x in tep]:
+        if cls.against_names[0] in [Cards.class_list[x[0]].name for x in tep]:#无懈可击直接取消继续
             return False
         
-        cards_to_play=[]
-        for i in person_start.cards:
-            if Cards.class_list[ i[0] ].name in cls.against_names:
-                cards_to_play.append(i)
-        return person_start.playcard(cards_to_play, inform='%s对您使用了%s，是否使用 %s'%(person_end.name, cls.name, '或'.join(cls.against_names)),\
-                             end=[], endnum=0, active=False, go_on=False)
+        return cls.on_be_playedto(person_end, person_start, card)
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
@@ -79,6 +74,3 @@ class card_juedou(Cards.base_skill.base):
 
 
 
-
-if __name__ == '__main__':
-    tep=base()

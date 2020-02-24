@@ -78,11 +78,8 @@ class base:
         self.round_status=False           
         return True
     
-    def addhealth(self, person_start, health_add=1, card=None):
-        if self.health+health_add<self.blood:
-            self.health+=health_add
-        else:
-            self.health=self.blood
+    def addhealth(self, person_start, health_add=1, card=None):        
+        self.health=min( self.blood, self.health+health_add)
         return True
     
     
@@ -101,8 +98,41 @@ class base:
             if person_start.after_dodamage(self, damage, card):
                 self.after_damaged(person_start, damage, card)
     
+    def before_playcards(self, cards):
+        pass
+    
+    def after_playcards(self, cards):
+        pass
+    
+    def add_armer(self, card):
+        self.armer.append(card)
+        if len(self.armer)>self.room.allow_armer:
+            dropcards=self.armer[:-self.room.allow_armer]
+            self.armer=self.armer[-self.room.allow_armer:]
+            #self.room.drop_cards(dropcards)
+        
+    
+    def add_shield(self, card):
+        self.shield.append(card)
+        if len(self.shield)>self.room.allow_shield:
+            dropcards=self.shield[:-self.room.allow_shield]
+            self.shield=self.shield[-self.room.allow_shield:]
+            #self.room.drop_cards(dropcards)
             
+    def add_horse_minus(self, card):
+        self.horse_minus.append(card)
+        if len(self.horse_minus)>self.room.allow_horse:
+            dropcards=self.horse_minus[:-self.room.allow_horse]
+            self.horse_minus=self.horse_minus[-self.room.allow_horse:]
+            #self.room.drop_cards(dropcards)
             
+    def add_horse_plus(self, card):
+        self.horse_plus.append(card)
+        if len(self.horse_plus)>self.room.allow_horse:
+            dropcards=self.horse_plus[:-self.room.allow_horse]
+            self.horse_plus=self.horse_plus[-self.room.allow_horse:]
+            #self.room.drop_cards(dropcards)
+        
     
     def before_dodamage(self, person_end, damage, card):
         #
@@ -220,8 +250,13 @@ class base:
             self.failer_cnt+=1  #限制出牌失败次数
             if self.failer_cnt>=Config.FailerCnt:return False
             return  self.playcard(cardtoselect, selectcnt, inform, end, endnum, active)            
+        
+        
         #出牌没问题
         self.dropcard(cards)
+        
+        if active:
+            self.before_playcards(cards)
         
         msg=Message.form_playcard(0, 0, 0, st, ed, cards, reply=False)  #通知所有人谁向谁出了牌
         self.room.send_msg_to_all(msg)
@@ -233,6 +268,8 @@ class base:
                     tesu=Cards.class_list[ i[0] ].on_be_playedto(self, self.room.heros_instance[k], i)
                     #返回是否命中
                     if tesu: break  #命中一次可以了
+        if active:
+            self.after_playcards(cards)
                 
         #不管如何应对，这里出牌是成功的
         return cards
@@ -243,11 +280,10 @@ class base:
         
     def dropcard(self, cards_list):
         for i in cards_list:
-            for j in self.all_the_cards_holders():
-                if i in j: 
-                    j.remove(i)
-                    self.room.drop_cards([i]) #牌进入弃牌堆
-                    break
+            if i in self.cards: 
+                self.cards.remove(i)
+                self.room.drop_cards([i]) #牌进入弃牌堆
+                
         #for i in cards_list: self.cards.remove(i)  #出牌了
         
     def cal_distance(self, startplayerid, endplayerid):

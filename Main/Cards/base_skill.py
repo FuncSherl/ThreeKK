@@ -11,7 +11,7 @@ from Common import Config,Message
 
 class base(Cards.base.base):
     cards_num_color=[0,0,0,0] #黑桃、梅花、红心、方片
-    name='base'
+    name='base_skill'
     type=Config.Card_type_enum[1] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
     against_names=['无懈可击']
     damage=1
@@ -23,14 +23,6 @@ class base(Cards.base.base):
     
     
     #以下必须由子类复现，凸显子类特性 
-    @classmethod
-    def cal_active(cls, person, card=None):
-        #该person是否能够出该类牌  person为一个实例 
-        if cls.active is None:#不确定,以桃的处理为例
-            if person.health<person.blood:
-                return  True
-            return False
-        return True
     
     @classmethod
     def cal_targets(cls, startperson, card=None):

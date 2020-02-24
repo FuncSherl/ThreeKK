@@ -16,7 +16,7 @@ class base(Cards.base.base):
     against_names=[]
     damage=0
     active=True
-    scop=10  #手长 
+    scop=1  #手长 
     
     def __init__(self):
         pass
@@ -26,19 +26,14 @@ class base(Cards.base.base):
 #############################################################
     @classmethod
     def on_be_playedto(cls, person_start, person_end, card=None):
-        if not cls.against_names: return True  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
+        #if not cls.against_names: return False  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
         #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
-
-        #决斗的话需要后面换玩家，然后接着调用
-        return True
+        if not cls.against_names: return cls.on_hit_player(cls,  person_start, person_end, card)
+        return False
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
-        #默认以杀为例
-        damage=cls.damage+person_start.round_additional_damage_attack+person_start.next_additional_damage_attack
-        person_start.next_additional_damage_attack=0  #去掉酒这种buff
-        
-        return person_end.drophealth(person_start, damage)
+        return True
         
         
 

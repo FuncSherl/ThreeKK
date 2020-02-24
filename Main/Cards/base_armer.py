@@ -36,20 +36,10 @@ class base(Cards.base.base):
 
 
 #############################################################
-    @classmethod
-    def on_be_playedto(cls, person_start, person_end_list, card=None):
-        if not cls.against_names: return True  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
-        #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例      
-        
-        #决斗的话需要后面换玩家，然后接着调用
-        return True
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
-        person_end.armer.append(card)
-        if len(person_end.armer)>person_end.room.allow_armer:
-            dropcards=person_end.armer[:-person_end.room.allow_armer]
-            person_end.dropcard(dropcards)
+        person_end.add_armer(card)
         return True
         
         

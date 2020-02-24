@@ -36,16 +36,9 @@ class card_attack(Cards.base_basic.base):
         if '青釭剑' not in [Cards.class_list[ x[0] ].name for x in person_start.armer]:
             for i in person_end.shield:
                 if Cards.class_list[i[0]].on_attacked(): return False
-        #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
-        cards_to_play=[]
-        for i in person_end.cards:
-            if Cards.class_list[ i[0] ].name in cls.against_names:
-                cards_to_play.append(i)
-        #能出的牌都已经准备好了
-        #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=0, active=True):
-        tep= person_end.playcard(cards_to_play, inform='%s对您使用了%s，是否使用 %s'%(person_start.name, cls.name, '或'.join(cls.against_names)),\
-                             end=[], endnum=0, active=False, go_on=False)
-            
+        
+        ###########################################################上面的可以优化
+        tep=cls.on_ask_response(person_start, person_end)            
             
         if not tep: #命中
             cls.on_hit_player(person_start, person_end, card)

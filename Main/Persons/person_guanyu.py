@@ -4,12 +4,12 @@ Created on 2020年2月12日
 
 @author: sherl
 '''
-import Persons
+import Persons,Cards
 import Persons.base as base
 
 class person_guanyu(base.base):
-    name='base'
-    describ='base class'
+    name='关羽'
+    describ='干干干'
     
     describ_skill1=''
     describ_skill2=''

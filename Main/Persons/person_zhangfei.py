@@ -4,18 +4,27 @@ Created on 2020年2月12日
 
 @author: sherl
 '''
-import Persons
+import Persons,Cards
 import Persons.base as base
 
 class person_zhangfei(base.base):
-    name='base'
-    describ='base class'
+    name='张飞'
+    describ='砍砍砍'
     
     describ_skill1=''
     describ_skill2=''
     
     blood=4
     
+    def activecards(self):
+        #当前的牌中有哪些是可以主动出的
+        ret=[]
+        for i in self.cards:
+            if Cards.class_list[i[0]].cal_active(self):
+                #张飞可不用下面这句判断 
+                #if Cards.class_list[i[0]].name=='杀' and self.attack_cnt>=self.room.allow_attack_cnt:continue
+                ret.append(i)
+        return ret
     
     
 

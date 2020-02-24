@@ -25,21 +25,18 @@ class card_tao(Cards.base_basic.base):
     def cal_targets(cls, startperson, card=None):
         #能指定什么目标,返回目标ids,桃需要重写
         cnt=len(startperson.room.socket_list)
-        if startperson.health<startperson.blood:  return 1,[startperson.playerid]  #仅自己
+        if startperson.round_status and startperson.health<startperson.blood:  return 1,[startperson.playerid]  #仅自己
         return 0,[]
         return 1,list( range(cnt ) ).remove(startperson.playerid)  #除了自己选一个
         return cnt,list( range(cnt ) )  #所有人 s
     
     
-    @classmethod
-    def on_be_playedto(cls, person_start, person_end, card=None):
-        #返回是否命中
-        return person_end.addhealth(person_start, card=card)
          
 
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
         #默认以杀为例
+        person_end.addhealth(person_start, 1, card=card)
         return True
 
 
