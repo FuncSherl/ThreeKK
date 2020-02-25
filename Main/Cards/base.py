@@ -45,11 +45,12 @@ class base:
 #############################################################
     @classmethod
     def on_be_playedto(cls, person_start, person_end, card=None):
+        #返回是否命中
         #if not cls.against_names: return False  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
         #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
         if not cls.against_names: return cls.on_hit_player(cls,  person_start, person_end, card)
         
-        tep=cls.on_ask_response(person_start, person_end)
+        tep=cls.on_ask_response(person_start, person_end, cards_sel=cls.against_names)
         if not tep: return cls.on_hit_player(person_start, person_end, card)
         return False
     
@@ -62,11 +63,11 @@ class base:
         return person_end.drophealth(person_start, damage)
         
     @classmethod
-    def on_ask_response(cls, person_start, person_end ,active=False, go_on=False):
+    def on_ask_response(cls, person_start, person_end ,active=False, go_on=False, cards_sel=against_names):
         #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
         cards_to_play=[]
         for i in person_end.cards:
-            if Cards.class_list[ i[0] ].name in cls.against_names:
+            if Cards.class_list[ i[0] ].name in cards_sel:
                 cards_to_play.append(i)
         #能出的牌都已经准备好了
         #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=0, active=True):
@@ -91,12 +92,14 @@ class base:
 
 
     ###################################################   armer special
+    @classmethod
     def before_playcard(self, startperson, card=None):
         #询问出牌前的装备判定
         return True
 
+    @classmethod
     def before_hit(self, startperson, endperson, card=None):
-        pass
+        return True
 
 
 

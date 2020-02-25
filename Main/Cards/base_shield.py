@@ -23,20 +23,12 @@ class base(Cards.base.base):
     
     
     #以下必须由子类复现，凸显子类特性 
-    @classmethod
-    def cal_active(cls, person, card=None):
-        #该person是否能够出该类牌  person为一个实例 
-        if cls.active is None:#不确定,以桃的处理为例
-            if person.health<person.blood:
-                return  True
-            return False
-        return True
     
     @classmethod
     def cal_targets(cls, startperson, card=None):
         #能指定什么目标,返回目标ids,桃需要重写
         cnt=len(startperson.room.socket_list)
-        #return 1,[startperson.playerid]  #仅自己
+        return 1,[startperson.playerid]  #仅自己
         return 1,list( range(cnt ) ).remove(startperson.playerid)  #除了自己选一个
         return cnt,list( range(cnt ) )  #所有人 
 
@@ -44,31 +36,19 @@ class base(Cards.base.base):
 
 #############################################################
     @classmethod
-    def on_be_playedto(cls, person_start, person_end_list, card=None):
-        if not cls.against_names: return True  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
+    def on_be_playedto(cls, person_start, person_end, card=None):
+        #if not cls.against_names: return False  #这里通过against——names判断是否需要反馈，比如闪就不需要反馈
         #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
-        for k in person_end_list:
-            cards_to_play=[]
-            for i in k.cards:
-                if Cards.class_list[ i[0] ].name in cls.against_names:
-                    cards_to_play.append(i)
-            #能出的牌都已经准备好了
-            #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=0, active=True):
-            tep= k.playcard(cards_to_play, inform='%s对您使用了%s，是否使用 %s'%(person_start.name, cls.name, '或'.join(cls.against_names)),\
-                             end=[], endnum=1, active=False)
-            if not tep: return tep
+        if not cls.against_names: return cls.on_hit_player(cls,  person_start, person_end, card)
         
-        
-        #决斗的话需要后面换玩家，然后接着调用
-        return True
+        tep=cls.on_ask_response(person_start, person_end)
+        if not tep: return cls.on_hit_player(person_start, person_end, card)
+        return False
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
-        #默认以杀为例
-        damage=cls.damage+person_start.round_additional_damage_attack+person_start.next_additional_damage_attack
-        person_start.next_additional_damage_attack=0  #去掉酒这种buff
-        
-        return person_end.drophealth(person_start, damage)
+        person_end.add_shield(card)
+        return True
         
         
     ###############################################shield speical
@@ -86,6 +66,15 @@ class base(Cards.base.base):
 
 
 
+    ###################################################armer special
+    @classmethod
+    def before_playcard(self, startperson, card=None):
+        #询问出牌前的装备判定
+        return True
+
+    @classmethod
+    def before_hit(self, startperson, endperson, card=None):
+        return True
 
 
 

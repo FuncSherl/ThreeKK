@@ -9,57 +9,49 @@ from Common import Config,Message
 
 
 
-class card_juedou(Cards.base_skill.base):
-    cards_num_color=[1,1,0,1] #黑桃、梅花、红心、方片
-    name='决斗'
+class card_wuxiekeji(Cards.base_skill.base):
+    cards_num_color=[1,2,0,0] #黑桃、梅花、红心、方片
+    name='无懈可击'
     #type=Config.Card_type_enum[1] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
-    against_names=['无懈可击', '杀']
-    damage=1
-    #active=True
+    against_names=['无懈可击']
+    damage=0
+    active=False
     #scop=10  #手长 
     
     def __init__(self):
         pass
     
     
-
+    #以下必须由子类复现，凸显子类特性 
+    
     @classmethod
     def cal_targets(cls, startperson, card=None):
         #能指定什么目标,返回目标ids,桃需要重写
         cnt=len(startperson.room.socket_list)
         #return 1,[startperson.playerid]  #仅自己
-        return 1,list( range(cnt ) ).remove(startperson.playerid)  #除了自己选一个
-        return cnt,list( range(cnt ) )  #所有人 
+        #return 1,list( range(cnt ) ).remove(startperson.playerid)  #除了自己选一个
+        #return cnt,list( range(cnt ) )  #所有人 
+        return 1,list( range(cnt ) )  #所有人 选一个
 
 
 
 #############################################################
     @classmethod
     def on_be_playedto(cls, person_start, person_end, card=None):
-        #返回是否命中
-        #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
         cnt=len(person_start.room.socket_list)
         tid=(person_start.playerid+1)%cnt
         
         while tid!=person_start.playerid:
-            tep=cls.on_ask_response(person_start, person_start.room.heros_instance[tid], active=False, go_on=True,  cards_sel=cls.against_names[:1])
+            tep=cls.on_ask_response(person_start, person_start.room.heros_instance[tid], active=False, go_on=True)
             if tep: return False
             tid=(tid+1)%cnt
         
         return cls.on_hit_player(person_start, person_end, card)
-
-    
+        
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
-        tep=cls.on_ask_response(person_start, person_end, active=False, go_on=False,  cards_sel=cls.against_names[1:])
-        if tep: return  not cls.on_hit_player(person_end, person_start, card)
-        #diaoxue
-        damage=cls.damage+person_start.round_additional_damage_skill+person_start.next_additional_damage_skill
-        person_start.next_additional_damage_skill=0  #去掉buff
-        
-        person_end.drophealth(person_start, damage, card)
-        
+        #默认以杀为例
         return True
         
         
@@ -73,3 +65,6 @@ class card_juedou(Cards.base_skill.base):
 
 
 
+
+if __name__ == '__main__':
+    tep=base()

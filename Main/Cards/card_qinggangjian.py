@@ -9,13 +9,13 @@ from Common import Config,Message
 
 
 
-class base(Cards.base.base):
-    cards_num_color=[0,0,0,0] #黑桃、梅花、红心、方片
-    name='base_armer'
+class card_qinggangjian(Cards.base_armer.base):
+    cards_num_color=[1,0,0,0] #黑桃、梅花、红心、方片
+    name='青釭剑'
     against_names=[]
-    type=Config.Card_type_enum[2] #默认是XX牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
+    #type=Config.Card_type_enum[2] #默认是XX牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
     active=True
-    scop=1  #武器射程
+    scop=2  #武器射程
     
     def __init__(self):
         pass
@@ -44,22 +44,17 @@ class base(Cards.base.base):
         
         
     ###################################################armer special
-    @classmethod
     def before_playcard(self, startperson, card=None):
         #询问出牌前的装备判定
         return True
 
-    @classmethod
     def before_hit(self, startperson, endperson, card=None):
         return True
 
 
-    
 
 
 
 
 
 
-if __name__ == '__main__':
-    tep=base()

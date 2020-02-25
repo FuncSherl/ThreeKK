@@ -32,7 +32,6 @@ class base:
         self.cards=[] #[[], ]
         self.round_init()
         self.round_status=False
-        self.function_table=Message.make_msg2fun(self)
         
         self.cards_may_play=[]
         self.cards_num_play=1
@@ -81,6 +80,7 @@ class base:
                 self.room.drop_cards(dropedcards)     
         self.round_status=False           
         return True
+    
     
     def addhealth(self, person_start, health_add=1, card=None):        
         self.health=min( self.blood, self.health+health_add)
@@ -180,6 +180,7 @@ class base:
     ##############################################################################################################
     #以下为工具函数，每个类中相同，不必重写
     def listen_distribute(self, msgwant=[]):
+        self.function_table=Message.make_msg2fun(self)
         msg=self.room.send_recv(self.mysocket)
         if msg:
             if msgwant and msg['msg_name'] not in msgwant: return self.listen_distribute(msgwant)
@@ -194,11 +195,25 @@ class base:
             if not res: return False
         return True
     
+    def ask_shields_before_playcard(self):
+        #出牌前询问盾技能发动,return True表示继续后面的出牌进程，否则重新开始出牌
+        for i in self.shield:
+            res=Cards.class_list[i[0]].before_playcard(self)
+            if not res: return False
+        return True
+    
     def ask_shield_before_damage(self, damage):
         ret=damage
         for i in self.shield:
             ret=min(ret, Cards.class_list[i[0]].on_damaged(damage))
         return ret
+    
+    def ask_shield_before_attack(self, card):
+        #return True没有挡住，继续处理，False被挡住了,不用处理
+        for i in self.shield:
+            res=Cards.class_list[i[0]].on_attacked(card)
+            if res: return False
+        return True
     
     def judge_playcard(self, cards, ed):
         #当收到玩家打出一张牌时，根据出牌时的状态判断该牌出的是否合理 
@@ -236,7 +251,8 @@ class base:
         
         #这里发动装备 
         if active:  
-            if not  self.ask_armers_before_playcard(): return True
+            if not  self.ask_armers_before_playcard(): return False
+            if not  self.ask_shields_before_playcard(): return False
                    
         msg=Message.form_askselect(0, 0, 0, self.playerid, end, inform, cardtoselect, select_cnt=selectcnt, reply=False)
         self.room.send_msg_to_all(msg, replylist=[self.playerid])

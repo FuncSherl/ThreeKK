@@ -37,7 +37,9 @@ class card_attack(Cards.base_basic.base):
             for i in person_end.shield:
                 if Cards.class_list[i[0]].on_attacked(): return False
         
-        ###########################################################上面的可以优化
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!上面的可以优化
+        person_start.attack_cnt+=1  #先记录该次出牌
+        
         tep=cls.on_ask_response(person_start, person_end)            
             
         if not tep: #命中
@@ -54,7 +56,8 @@ class card_attack(Cards.base_basic.base):
         damage=cls.damage+person_start.round_additional_damage_attack+person_start.next_additional_damage_attack
         person_start.next_additional_damage_attack=0  #去掉酒这种buff
         
-        return person_end.drophealth(person_start, damage, card)
+        person_end.drophealth(person_start, damage, card)
+        return True
 
 
 

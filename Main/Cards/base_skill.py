@@ -31,6 +31,7 @@ class base(Cards.base.base):
         #return 1,[startperson.playerid]  #仅自己
         return 1,list( range(cnt ) ).remove(startperson.playerid)  #除了自己选一个
         return cnt,list( range(cnt ) )  #所有人 
+        return 1,list( range(cnt ) )  #所有人 选一个
 
 
 
@@ -41,7 +42,7 @@ class base(Cards.base.base):
         tid=(person_start.playerid+1)%cnt
         
         while tid!=person_start.playerid:
-            tep=cls.on_ask_response(person_start, person_start.room.heros_instance[tid], active=False, go_on=True)
+            tep=cls.on_ask_response(person_start, person_start.room.heros_instance[tid], active=False, go_on=True, cards_sel=cls.against_names)
             if tep: return False
             tid=(tid+1)%cnt
         
@@ -50,7 +51,6 @@ class base(Cards.base.base):
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
-        #默认以杀为例
         return True
         
         
