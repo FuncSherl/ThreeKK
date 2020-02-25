@@ -43,6 +43,7 @@ class base:
         self.shield=[]
         self.horse_minus=[]
         self.horse_plus=[]
+        self.delayed_skill=[]
         
         self.all_the_cards_holders=lambda :[self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus]
         
@@ -110,38 +111,48 @@ class base:
     
     def add_armer(self, card):
         self.armer.append(card)
+        if card in self.room.cards_drop: self.room.cards_drop.remove(card)
         if len(self.armer)>self.room.allow_armer:
             dropcards=self.armer[:-self.room.allow_armer]
             self.armer=self.armer[-self.room.allow_armer:]
-            #self.room.drop_cards(dropcards)
+            self.room.drop_cards(dropcards)
         
     
     def add_shield(self, card):
         self.shield.append(card)
+        if card in self.room.cards_drop: self.room.cards_drop.remove(card)
         if len(self.shield)>self.room.allow_shield:
             dropcards=self.shield[:-self.room.allow_shield]
             self.shield=self.shield[-self.room.allow_shield:]
-            #self.room.drop_cards(dropcards)
+            self.room.drop_cards(dropcards)
             
     def add_horse_minus(self, card):
         self.horse_minus.append(card)
+        if card in self.room.cards_drop: self.room.cards_drop.remove(card)
         if len(self.horse_minus)>self.room.allow_horse:
             dropcards=self.horse_minus[:-self.room.allow_horse]
             self.horse_minus=self.horse_minus[-self.room.allow_horse:]
-            #self.room.drop_cards(dropcards)
+            self.room.drop_cards(dropcards)
             
     def add_horse_plus(self, card):
         self.horse_plus.append(card)
+        if card in self.room.cards_drop: self.room.cards_drop.remove(card)
         if len(self.horse_plus)>self.room.allow_horse:
             dropcards=self.horse_plus[:-self.room.allow_horse]
             self.horse_plus=self.horse_plus[-self.room.allow_horse:]
-            #self.room.drop_cards(dropcards)
+            self.room.drop_cards(dropcards)
+            
+            
+    def add_delayed_skill(self, card):
+        self.delayed_skill.append(card)
+        if card in self.room.cards_drop: self.room.cards_drop.remove(card)
         
-    
-    def before_dodamage(self, person_end, damage, card):
+    #A.before_dodamage->self.before_damaged->drop health->A.after_dodamage->self.after_damaged
+    def before_dodamage(self, endperson, damage, card):
         #
-        
-        return True
+        damage= self.ask_armer_before_dodamage(self, endperson, damage, card)
+        damage= self.ask_shield_before_dodamage(self, endperson, damage, card)
+        return max(0, damage)
     
     def after_dodamage(self, person_end, damage, card):
         
@@ -151,8 +162,9 @@ class base:
     #自己掉血时
     def before_damaged(self, person_start, damage, card):
         #return true表示person_end可以因掉血发动技能
-        return self.ask_shield_before_damage(damage)
-        
+        damage=self.ask_shield_on_damaged(person_start,damage, card)
+        damage=self.ask_armer_on_damaged(person_start,damage, card)
+        return max(0, damage)
     
     def after_damaged(self, person_start, damage, card):
         #掉血技能
@@ -187,34 +199,62 @@ class base:
             return self.function_table[msg['msg_name']](msg)
         else:
             return None
-        
-    def ask_armers_before_playcard(self):
+    ###################################################################  出牌前的状态处理
+    def ask_armers_before_playcard(self, card=None):
         #出牌前询问武器技能发动,return True表示继续后面的出牌进程，否则重新开始出牌
         for i in self.armer:
-            res=Cards.class_list[i[0]].before_playcard(self)
+            res=Cards.class_list[i[0]].before_playcard(self, card)
             if not res: return False
         return True
     
-    def ask_shields_before_playcard(self):
+    def ask_shields_before_playcard(self, card=None):
         #出牌前询问盾技能发动,return True表示继续后面的出牌进程，否则重新开始出牌
         for i in self.shield:
-            res=Cards.class_list[i[0]].before_playcard(self)
+            res=Cards.class_list[i[0]].before_playcard(self, card)
+            if not res: return False
+        return True
+    ##############################################################################当有伤害来时
+    def ask_shield_on_damaged(self, startperson, damage, card=None):
+        ret=damage
+        for i in self.shield:
+            ret=min(ret, Cards.class_list[i[0]].on_damaged(self, startperson, ret,card))
+        return ret
+    
+    def ask_armer_on_damaged(self, startperson, damage, card=None):
+        ret=damage
+        for i in self.armer:
+            ret=min(ret, Cards.class_list[i[0]].on_damaged(self, startperson, ret, card))
+        return ret
+    
+    ###############################################################################被攻击时，一般不会涉及武器    
+    def ask_shield_on_attacked(self,  endperson,card):
+        #return True没有挡住，继续处理，False被挡住了,不用处理
+        for i in self.shield:
+            res=Cards.class_list[i[0]].on_attacked(self, endperson,card)
             if not res: return False
         return True
     
-    def ask_shield_before_damage(self, damage):
-        ret=damage
-        for i in self.shield:
-            ret=min(ret, Cards.class_list[i[0]].on_damaged(damage))
-        return ret
-    
-    def ask_shield_before_attack(self, card):
+    def ask_armer_on_attacked(self,  endperson,card):
         #return True没有挡住，继续处理，False被挡住了,不用处理
         for i in self.shield:
-            res=Cards.class_list[i[0]].on_attacked(card)
-            if res: return False
+            res=Cards.class_list[i[0]].on_attacked(self, endperson,card)
+            if not res: return False
         return True
     
+    ###############################################################################before_dodamage   
+    def ask_shield_before_dodamage(self,  endperson, damage,card):
+        ret=damage
+        for i in self.shield:
+            ret=max(ret, Cards.class_list[i[0]].before_dodamage(self, endperson, ret,card) )
+        return ret
+    
+    def ask_armer_before_dodamage(self, endperson, damage,card):
+        ret=damage
+        for i in self.armer:
+            ret=max( ret, Cards.class_list[i[0]].before_dodamage(self, endperson, ret,card))
+        return ret
+    
+    ################################################################################
     def judge_playcard(self, cards, ed):
         #当收到玩家打出一张牌时，根据出牌时的状态判断该牌出的是否合理 
         if len(cards) != self.cards_num_play:  return False
@@ -273,9 +313,11 @@ class base:
         
         
         #出牌没问题
+        # 既然已经出牌了，就先把牌弃掉，但是牌的信息还在，当后面添加装备时，在从弃牌堆里面删掉该牌
         self.dropcard(cards)
         
-        if active:
+        
+        if self.round_status:
             self.before_playcards(cards)
         
         msg=Message.form_playcard(0, 0, 0, st, ed, cards, reply=False)  #通知所有人谁向谁出了牌
@@ -300,17 +342,19 @@ class base:
         
     def dropcard(self, cards_list):
         for i in cards_list:
-            if i in self.cards: 
-                self.cards.remove(i)
-                self.room.drop_cards([i]) #牌进入弃牌堆
-                
+            for j in self.all_the_cards_holders(): 
+                if i in j:
+                    j.remove(i)
+                    self.room.drop_cards([i]) #牌进入弃牌堆
+                    break
+                    
         #for i in cards_list: self.cards.remove(i)  #出牌了
         
     def cal_distance(self, startplayerid, endplayerid):
         tep=abs(endplayerid-startplayerid)
         dis=min(tep, len(self.room.socket_list)-tep  )
-        if self.room.heros_instance[startplayerid].horse_minus:  dis-=1
-        if self.room.heros_instance[endplayerid].horse_plus:  dis+=1
+        dis-=len(self.room.heros_instance[startplayerid].horse_minus)
+        dis+=len(self.room.heros_instance[endplayerid].horse_plus)
         return dis
     
     def cal_armerlength(self, card):

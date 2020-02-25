@@ -45,7 +45,8 @@ class base:
     
     def drop_cards(self, cards_droped):
         #出过的牌
-        self.cards_drop.extend(cards_droped)              
+        self.cards_drop.extend(cards_droped)   
+        return True           
             
     
     def generate_cards(self):

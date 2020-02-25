@@ -38,6 +38,7 @@ class base(Cards.base.base):
 #############################################################
     @classmethod
     def on_be_playedto(cls, person_start, person_end, card=None):
+        #返回是否命中
         cnt=len(person_start.room.socket_list)
         tid=(person_start.playerid+1)%cnt
         

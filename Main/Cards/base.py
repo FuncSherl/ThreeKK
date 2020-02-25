@@ -76,18 +76,16 @@ class base:
         return tep
         
     
-
+    #以下函数正常情况下应该ret True，否则出牌阶段无法向下进行 
     ###############################################   shield speical
     @classmethod
-    def on_attacked(cls, card):
-        #return 能否挡住
-        if Cards.class_list[card[0]].name=='杀':
-            if card[1]==0 or card[1]==1: return True
-        return False
+    def on_attacked(cls, endperson, startperson,card):
+        #return 挡不住？  startperson attack -> endperson
+        return True
         
     @classmethod
-    def on_damaged(cls, damage):
-        #return过了后的伤害值
+    def on_damaged(cls, endperson, startperson, damage, card=None):
+        #return过了后的伤害值,  受伤
         return damage
 
 
@@ -98,8 +96,10 @@ class base:
         return True
 
     @classmethod
-    def before_hit(self, startperson, endperson, card=None):
-        return True
+    def before_dodamage(self, startperson, endperson, damage, card=None):
+        #return damage,造成伤害
+        
+        return damage
 
 
 
