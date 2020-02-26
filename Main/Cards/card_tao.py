@@ -31,7 +31,7 @@ class card_tao(Cards.base_basic.base):
         return cnt,list( range(cnt ) )  #所有人 s
     
     
-         
+    
 
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):

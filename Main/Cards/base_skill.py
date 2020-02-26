@@ -47,7 +47,7 @@ class base(Cards.base.base):
             if tep: return False
             tid=(tid+1)%cnt
         
-        return cls.on_hit_player(person_start, person_end, card)
+        return True #cls.on_hit_player(person_start, person_end, card)
         
     
     @classmethod

@@ -46,7 +46,7 @@ class card_attack(Cards.base_basic.base):
         tep=cls.on_ask_response(person_start, person_end)            
             
         if not tep: #命中
-            return cls.on_hit_player(person_start, person_end, card)        
+            return True #cls.on_hit_player(person_start, person_end, card)        
         
         #决斗的话需要后面换玩家，然后接着调用
         return False
