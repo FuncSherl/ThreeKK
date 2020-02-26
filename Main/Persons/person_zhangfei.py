@@ -20,6 +20,9 @@ class person_zhangfei(base.base):
     
     blood=4
     
+    def __init__(self, room, pid):
+        super().__init__(room, pid)
+    
     def activecards(self):
         #当前的牌中有哪些是可以主动出的
         ret=[]

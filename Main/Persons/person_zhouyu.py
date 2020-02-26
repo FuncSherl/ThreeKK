@@ -21,6 +21,10 @@ class person_zhouyu(base.base):
     
     blood=4
     
+    
+    def __init__(self, room, pid):
+        super().__init__(room, pid)
+    
     #这里体现各种技能
     def roundstart(self):
         self.round_init()

@@ -6,10 +6,10 @@ Created on 2020年2月14日
 '''
 import Persons,Cards
 from Common import Config,Message
+from Cards import base_skill
 
 
-
-class card_juedou(Cards.base_skill.base):
+class card_juedou(base_skill.base):
     cards_num_color=[1,1,0,1] #黑桃、梅花、红心、方片
     name='决斗'
     #type=Config.Card_type_enum[1] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']

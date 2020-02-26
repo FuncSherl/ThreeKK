@@ -4,10 +4,11 @@ Created on 2020年2月14日
 
 @author: sherl
 '''
+from  Cards import base_basic
 import Cards
 
 
-class card_attack(Cards.base_basic.base):
+class card_attack(base_basic.base):
     cards_num_color=[7,14,3,6]  #黑桃、梅花、红心、方片
     active=True    #能主动出牌吗[true, false, none]
     name='杀'

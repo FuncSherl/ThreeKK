@@ -4,12 +4,12 @@ Created on 2020年2月14日
 
 @author: sherl
 '''
-import Persons,Cards
+import Persons
 from Common import Config,Message
+from Cards import base
 
 
-
-class base(Cards.base.base):
+class base(base.base):
     cards_num_color=[0,0,0,0] #黑桃、梅花、红心、方片
     name='base'
     type=Config.Card_type_enum[0] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']

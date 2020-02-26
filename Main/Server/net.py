@@ -83,6 +83,8 @@ class Server:
             teproom=self.form_room(cnt)
             sd=threading.Thread(target=teproom.start(), args=())
             sd.start()
+        self.cleanup()
+            
             
     def cleanup(self):
         self.serversocket.close()

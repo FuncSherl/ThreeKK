@@ -4,10 +4,10 @@ Created on 2020年2月14日
 
 @author: sherl
 '''
+from  Cards import base_basic
 import Cards
 
-
-class card_tao(Cards.base_basic.base):
+class card_tao(base_basic.base):
     cards_num_color=[0,0,7,1]  #黑桃、梅花、红心、方片
     active=None    #能主动出牌吗[true, false, none]
     name='桃'

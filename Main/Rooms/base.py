@@ -103,7 +103,7 @@ class base:
         for ind,i in enumerate(self.socket_list):
             msg['myid']=ind
             msg['myhero']=self.heros_list[ind]
-            msg['mycards']=self.heros_instance[ind].cards
+            msg['mycards']=self.heros_instance[ind].all_the_cards_holders()
             #msg['reply']=False
             if ind in replylist: msg['reply']=True
             msg=json.dumps(msg)
@@ -124,7 +124,7 @@ class base:
     
     def on_pickhero(self):
         cnt_ned=len(self.socket_list)*Config.HerosforSelect
-        hero_list=random.sample(range( len(Persons.class_list) ), cnt_ned)
+        hero_list=random.sample(list( range( len(Persons.class_list) )), cnt_ned)
         for ind,i in enumerate(self.socket_list):
             msg=Message.form_pickhero(ind,  hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect] , reply=True )
             msg=json.dumps(msg)
@@ -180,11 +180,8 @@ class base:
         
     def playcardstart(self, startid):            
         #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, 
-        while self.heros_instance[startid].playcard(self.heros_instance[startid].activecards()):#出牌超时，出牌阶段结束
-            #新一轮出牌,每次循环都是代表一张牌已经处理完了，比如决斗相互出牌处理完了，这里等待出一张新牌
-            #这样则必须在下次循环前将该牌的相关处理完
-            pass
-            
+        
+        self.heros_instance[startid].playcardstart()
             
             
     def roundend(self, startid):
@@ -207,7 +204,7 @@ class base:
         self.on_pickhero()
         self.on_gameinited()
         
-        st=0
+        st=random.randint(0, len(self.socket_list)-1)
         while self.game_status:
             if self.heros_instance[st].alive: self.roundstart(st)
             if self.heros_instance[st].alive: self.playcardstart(st)

@@ -4,10 +4,11 @@ Created on 2020年2月14日
 
 @author: sherl
 '''
+from Cards import base_basic
 import Cards
 
 
-class card_miss(Cards.base_basic.base):
+class card_miss(base_basic.base):
     cards_num_color=[0,0,3,12]  #黑桃、梅花、红心、方片
     active=False    #能主动被出牌吗
     name='闪'

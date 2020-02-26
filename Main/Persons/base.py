@@ -83,6 +83,13 @@ class base:
         return True
                   
     ###############################################################################出牌的各个时间点的处理            
+    def playcardstart(self):
+        #如果英雄一开始出牌可以选择其他，这里要修改,eg.guanyu
+        while self.playcard(self.activecards()):#出牌超时，出牌阶段结束
+            #新一轮出牌,每次循环都是代表一张牌已经处理完了，比如决斗相互出牌处理完了，这里等待出一张新牌
+            #这样则必须在下次循环前将该牌的相关处理完
+            pass
+    
     def init_playcards(self, card=None):  #可以进行判断最后一张手牌等操作
         if not  self.ask_armers_init_playcard(card): return False
         if not  self.ask_shields_init_playcard(card): return False
@@ -331,7 +338,10 @@ class base:
             
         for i in cards:
             if i not in self.cards_may_play:       return False
-            
+        
+        for i in ed: 
+            if not self.room.heros_instance[i].alive: return False
+        
         if self.cards_end_may is None:#判定牌的目标合理性,None表示根据牌来定
             for i in cards:
                 tn,endids=Cards.class_list[ i[0] ].cal_targets(self)
@@ -408,7 +418,7 @@ class base:
                         if not self.after_playcards(self.room.heros_instance[k], i): break
                     '''
         #不管如何应对，这里出牌是成功的
-        return cards
+        return [cards, ed]
         
         
     def addcard(self, cards_list):
