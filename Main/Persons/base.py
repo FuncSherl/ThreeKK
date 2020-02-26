@@ -81,34 +81,44 @@ class base:
                 self.room.drop_cards(dropedcards)     
         self.round_status=False           
         return True
-    
-    
-    def addhealth(self, person_start, health_add=1, card=None):        
-        self.health=min( self.blood, self.health+health_add)
+                  
+    ###############################################################################出牌的各个时间点的处理            
+    def init_playcards(self, card=None):  #可以进行判断最后一张手牌等操作
+        if not  self.ask_armers_init_playcard(card): return False
+        if not  self.ask_shields_init_playcard(card): return False
         return True
     
     
-    def drophealth(self, person_start, damage, card):
-        #如果before_dodamage-》before_damaged-》受伤-》after_dodamage-》after_damaged        
-        #掉血响应
-        if person_start.before_dodamage(self, damage, card):
-            damage=self.before_damaged( person_start, damage, card)
-            self.health-=damage
-            if self.health<=0:
-                self.ask_for_save()
-            #后面如果还血量不够，就死亡
-            if self.health<=0:
-                self.ondeath()
-            
-            if person_start.after_dodamage(self, damage, card):
-                self.after_damaged(person_start, damage, card)
+    def before_playcards(self, endperson, card):    #出牌前进行装备判断，对某张牌进行加成
+        if not  self.ask_armers_before_playcard(endperson, card): return False
+        if not  self.ask_shields_before_playcard(endperson, card): return False
+        return True
     
-    def before_playcards(self, cards):
+    def on_be_playcard(self, startperson, card):
+        if not self.ask_shield_on_attacked(startperson, card): return False
+        if not self.ask_armer_on_attacked(startperson, card): return False
+        #被chupai时的技能
+        
+        return True
+    
+    def after_playcards(self,endperson, card):   #出牌后的装备技能判断，对
         pass
     
-    def after_playcards(self, cards):
-        pass
+    def play_one_card(self, endperson, card, active):
+        #return True: normal  False: break
+        if self.before_playcards(endperson, card): #只有出牌方同意
+            if not endperson.on_be_playcard(self, card):  #被出牌方才能进行盾牌的格挡判断 
+                return True   
+        #这后面的处理就不要考虑装备效果了， 在牌各自的处理中只处理自己的事
+        tesu=Cards.class_list[ card[0] ].on_be_playedto(self, endperson, card)
+        #返回是否命中
+        if tesu: return False  #命中一次可以了
+                    
+        if active:#如果未命中，可以发动一些装备
+            if not self.after_playcards(endperson, card): return False
+        return True
     
+    ######################################################################################新装备来到处理 
     def add_armer(self, card):
         self.armer.append(card)
         if card in self.room.cards_drop: self.room.cards_drop.remove(card)
@@ -147,6 +157,29 @@ class base:
         self.delayed_skill.append(card)
         if card in self.room.cards_drop: self.room.cards_drop.remove(card)
         
+        
+    ###########################################################################################生命值处理部分 
+    def addhealth(self, person_start, health_add=1, card=None):        
+        self.health=min( self.blood, self.health+health_add)
+        return True
+    
+         
+    def drophealth(self, person_start, damage, card):
+        #如果before_dodamage-》before_damaged-》受伤-》after_dodamage-》after_damaged        
+        #掉血响应
+        damage=person_start.before_dodamage(self, damage, card) #伤害来源允许才能进行向下进行
+        if damage:
+            damage=self.before_damaged( person_start, damage, card) #装备效果和技能
+            self.health-=damage
+            if self.health<=0:
+                self.ask_for_save()
+            #后面如果还血量不够，就死亡
+            if self.health<=0:
+                if not self.ondeath(): return damage
+            
+            if person_start.after_dodamage(self, damage, card):  #伤害来源允许才能发动掉血技能
+                self.after_damaged(person_start, damage, card)  #发动掉血技能
+        return damage
     #A.before_dodamage->self.before_damaged->drop health->A.after_dodamage->self.after_damaged
     def before_dodamage(self, endperson, damage, card):
         #
@@ -155,6 +188,7 @@ class base:
         return max(0, damage)
     
     def after_dodamage(self, person_end, damage, card):
+        #造成伤害后技能
         
         return True
     
@@ -171,13 +205,14 @@ class base:
         
         return True
     
-    
+    ###################################################################    
     def ondeath(self):
         self.alive=False
         for i in self.all_the_cards_holders():
             self.room.drop_cards(i)
     
     
+    ####################################################################
     def activecards(self):
         #当前的牌中有哪些是可以主动出的
         ret=[]
@@ -199,18 +234,33 @@ class base:
             return self.function_table[msg['msg_name']](msg)
         else:
             return None
-    ###################################################################  出牌前的状态处理
-    def ask_armers_before_playcard(self, card=None):
+    ###################################################################  每次准备出牌前的处理,如添加可选择的目标数目
+    def ask_armers_init_playcard(self, card=None):
         #出牌前询问武器技能发动,return True表示继续后面的出牌进程，否则重新开始出牌
         for i in self.armer:
-            res=Cards.class_list[i[0]].before_playcard(self, card)
+            res=Cards.class_list[i[0]].init_playcard(self, card)
             if not res: return False
         return True
     
-    def ask_shields_before_playcard(self, card=None):
+    def ask_shields_init_playcard(self, card=None):
         #出牌前询问盾技能发动,return True表示继续后面的出牌进程，否则重新开始出牌
         for i in self.shield:
-            res=Cards.class_list[i[0]].before_playcard(self, card)
+            res=Cards.class_list[i[0]].init_playcard(self, card)
+            if not res: return False
+        return True    
+    
+    ###################################################################  要打出一张牌了
+    def ask_armers_before_playcard(self, endperson, card=None):
+        #出牌前询问武器技能发动,return True表示继续后面的出牌进程，否则重新开始出牌
+        for i in self.armer:
+            res=Cards.class_list[i[0]].before_playcard(self, endperson,card)
+            if not res: return False
+        return True
+    
+    def ask_shields_before_playcard(self, endperson, card=None):
+        #出牌前询问盾技能发动,return True表示继续后面的出牌进程，否则重新开始出牌
+        for i in self.shield:
+            res=Cards.class_list[i[0]].before_playcard(self,endperson, card)
             if not res: return False
         return True
     ##############################################################################当有伤害来时
@@ -291,10 +341,11 @@ class base:
         
         #这里发动装备 
         if active:  
-            if not  self.ask_armers_before_playcard(): return False
-            if not  self.ask_shields_before_playcard(): return False
-                   
-        msg=Message.form_askselect(0, 0, 0, self.playerid, end, inform, cardtoselect, select_cnt=selectcnt, reply=False)
+            if not self.init_playcards(): return  False
+            
+        #myid, myheroid, mycards, start, end, informmsg, cardstoselect, select_cnt=1,  reply=True
+        msg=Message.form_askselect(0, 0, 0, self.playerid, self.cards_end_may, \
+                                   self.cards_inform, self.cards_may_play, select_cnt=self.cards_num_play, reply=False)
         self.room.send_msg_to_all(msg, replylist=[self.playerid])
         
         ####################
@@ -315,11 +366,7 @@ class base:
         #出牌没问题
         # 既然已经出牌了，就先把牌弃掉，但是牌的信息还在，当后面添加装备时，在从弃牌堆里面删掉该牌
         self.dropcard(cards)
-        
-        
-        if self.round_status:
-            self.before_playcards(cards)
-        
+                
         msg=Message.form_playcard(0, 0, 0, st, ed, cards, reply=False)  #通知所有人谁向谁出了牌
         self.room.send_msg_to_all(msg)
         
@@ -327,12 +374,19 @@ class base:
         if go_on:
             for k in ed:
                 for i in cards: 
+                    if not self.play_one_card(self.room.heros_instance[k], i, active): break
+                    '''
+                    if self.before_playcards(self.room.heros_instance[k], i): #只有出牌方同意
+                        if not self.room.heros_instance[k].on_be_playcard(self, i):  #被出牌方才能进行盾牌的格挡判断 
+                            continue   
+                    #这后面的处理就不要考虑装备效果了， 在牌各自的处理中只处理自己的事
                     tesu=Cards.class_list[ i[0] ].on_be_playedto(self, self.room.heros_instance[k], i)
                     #返回是否命中
                     if tesu: break  #命中一次可以了
-        if active:
-            self.after_playcards(cards)
-                
+                    
+                    if active:#如果未命中，可以发动一些装备
+                        if not self.after_playcards(self.room.heros_instance[k], i): break
+                    '''
         #不管如何应对，这里出牌是成功的
         return cards
         

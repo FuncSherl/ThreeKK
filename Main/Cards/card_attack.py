@@ -33,19 +33,20 @@ class card_attack(Cards.base_basic.base):
     @classmethod
     def on_be_playedto(cls, person_start, person_end, card=None):
         #返回是否命中
+        '''
         if '青釭剑' not in [Cards.class_list[ x[0] ].name for x in person_start.armer]:
             for i in person_end.shield:
                 if Cards.class_list[i[0]].on_attacked(): return False
-        
+        '''
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!上面的可以优化
         person_start.attack_cnt+=1  #先记录该次出牌
+        
+        #if not person_end.on_be_playcard(person_start, card): return False
         
         tep=cls.on_ask_response(person_start, person_end)            
             
         if not tep: #命中
-            cls.on_hit_player(person_start, person_end, card)
-            return True
-        
+            return cls.on_hit_player(person_start, person_end, card)        
         
         #决斗的话需要后面换玩家，然后接着调用
         return False

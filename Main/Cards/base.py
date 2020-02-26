@@ -56,11 +56,7 @@ class base:
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
-        #默认以杀为例
-        damage=cls.damage+person_start.round_additional_damage_attack+person_start.next_additional_damage_attack
-        person_start.next_additional_damage_attack=0  #去掉酒这种buff
-        
-        return person_end.drophealth(person_start, damage)
+        return True
         
     @classmethod
     def on_ask_response(cls, person_start, person_end ,selectcnt=1, active=False, go_on=False, cards_sel=against_names):
@@ -71,7 +67,7 @@ class base:
                 cards_to_play.append(i)
         #能出的牌都已经准备好了
         #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=0, active=True):
-        tep= person_end.playcard(cards_to_play, selectcnt=selectcnt, inform='%s对您使用了%s，是否使用 %s'%(person_start.name, cls.name, '或'.join(cls.against_names)),\
+        tep= person_end.playcard(cards_to_play, selectcnt=selectcnt, inform='%s对您使用了%s，请使用 %s'%(person_start.name, cls.name, '或'.join(cls.against_names)),\
                              end=[], endnum=0, active=active, go_on=go_on)
         return tep
         
@@ -91,7 +87,12 @@ class base:
 
     ###################################################   armer special
     @classmethod
-    def before_playcard(self, startperson, card=None):
+    def init_playcard(self, startperson, card=None):
+        #每次准备出牌前的装备判定
+        return True
+    
+    @classmethod
+    def before_playcard(self, startperson,endperson, card=None):
         #询问出牌前的装备判定
         return True
 
