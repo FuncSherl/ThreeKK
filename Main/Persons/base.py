@@ -101,8 +101,12 @@ class base:
         
         return True
     
-    def after_playcards(self,endperson, card):   #出牌后的装备技能判断，对
-        pass
+    def after_playcard(self,endperson, card, hit=False):   #出牌后的装备技能判断，对
+        if not self.ask_shield_after_playcard(endperson, card, hit): return False
+        if not self.ask_armer_after_playcard(endperson, card, hit): return False
+        #被chupai时的技能
+        
+        return True
     
     def play_one_card(self, endperson, card, active):
         #return True: normal  False: break
@@ -111,11 +115,12 @@ class base:
                 return True   
         #这后面的处理就不要考虑装备效果了， 在牌各自的处理中只处理自己的事
         tesu=Cards.class_list[ card[0] ].on_be_playedto(self, endperson, card)
-        #返回是否命中
-        if tesu: return False  #命中一次可以了
+        #返回是否命中  tesu=True 命中        
                     
         if active:#如果未命中，可以发动一些装备
-            if not self.after_playcards(endperson, card): return False
+            if not self.after_playcard(endperson, card, tesu): return False
+        
+        if tesu: return False  #命中一次可以了
         return True
     
     ######################################################################################新装备来到处理 
@@ -303,6 +308,21 @@ class base:
         for i in self.armer:
             ret=max( ret, Cards.class_list[i[0]].before_dodamage(self, endperson, ret,card))
         return ret
+    
+    ###############################################################################被攻击时，一般不会涉及武器    
+    def ask_shield_after_playcard(self,  endperson,card, hit):
+        #return True没有挡住，继续处理，False被挡住了,不用处理
+        for i in self.shield:
+            res=Cards.class_list[i[0]].after_playcard(self, endperson,card, hit)
+            if not res: return False
+        return True
+    
+    def ask_armer_after_playcard(self,  endperson,card, hit):
+        #return True没有挡住，继续处理，False被挡住了,不用处理
+        for i in self.shield:
+            res=Cards.class_list[i[0]].after_playcard(self, endperson,card, hit)
+            if not res: return False
+        return True
     
     ################################################################################
     def judge_playcard(self, cards, ed):

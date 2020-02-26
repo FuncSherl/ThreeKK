@@ -88,17 +88,22 @@ class base:
 
     ###################################################   armer special
     @classmethod
-    def init_playcard(self, startperson, card=None):
+    def init_playcard(cls, startperson, card=None):
         #每次准备出牌前的装备判定
         return True
     
     @classmethod
-    def before_playcard(self, startperson,endperson, card=None):
+    def before_playcard(cls, startperson,endperson, card=None):
         #询问出牌前的装备判定
+        return True
+    
+    @classmethod
+    def after_playcard(cls, startperson,endperson, card, hit):
+        
         return True
 
     @classmethod
-    def before_dodamage(self, startperson, endperson, damage, card=None):
+    def before_dodamage(cls, startperson, endperson, damage, card=None):
         #return damage,造成伤害
         
         return damage
