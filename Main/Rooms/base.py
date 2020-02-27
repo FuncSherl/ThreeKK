@@ -74,42 +74,72 @@ class base:
         :等待回复
         :若msg不为空则先发送msg
         '''
-        if msg is not None: c_sock.send(msg.encode('utf-8'))
+        if msg: self.send_message_str(c_sock, msg)
         try:
             tmsg=c_sock.recv(Config.BuffSize)
-            if not tmsg: return None
             
+            if not tmsg: return None
+            print ('recv:',tmsg)
         except  socket.timeout:
-            print ('detected timeout')
+            print ('ERROR:detected timeout')
             return None
-        except:
-            print ('unexpected error')
+        except Exception as e:
+            print ('unexpected error:', str(e))
             return None
-        return json.loads(tmsg.decode('utf-8'))
+        msg_list_str=tmsg.decode('utf-8')
+        msg_list=msg_list_str.split(Config.Message_tail)
+        ret=[json.loads(x) for x in msg_list if x]
+        return ret
     
-    def send_recv_onebyone(self, sock_list, msg_want=None, msg=None):
-        ret=[]
-        idcnt=0
-        while idcnt<len(sock_list):
-            tep=self.send_recv(sock_list[idcnt], msg)
-            if tep and msg_want and tep['msg_name']!=msg_want: continue
-                
-            ret.append(tep)
-            idcnt+=1
-
+    @classmethod
+    def send_map_str(cls, socket, messagemap):
+        # 统一处理发送map 形式的消息, 注意输入的messagemap为type：dict
+        strm=json.dumps(messagemap)
+        strm+=Config.Message_tail
+        try:
+            res=socket.send(strm.encode('utf-8'))
+        except Exception as e:
+            print ('send error:', str(e))
+            return None
+        return res
+    
+    @classmethod
+    def send_message_str(cls, socket, strm):
+        # 统一处理发送string形式的消息, 注意输入的messagemap为type：string
+        #strm=json.dumps(messagemap)
+        strm+=Config.Message_tail
+        try:
+            res=socket.send(strm.encode('utf-8'))
+        except Exception as e:
+            print ('send error:', str(e))
+            return None
+        return res
+    
+    def send_recv_onebyone(self, sock_list, msg_want=[], msg=None):
+        ret=[None]*len(sock_list)
+        
+        for ind,i in enumerate(sock_list):
+            tep=self.send_recv(i, msg)
+            if not tep: continue
+                        
+            for j in tep:                
+                if msg_want and j['msg_name'] not in msg_want: continue                
+                ret[ind]=j
         return ret
     
     def send_msg_to_all(self, msg, replylist=[]):
         for ind,i in enumerate(self.socket_list):
             msg['myid']=ind  #第几个玩家
-            msg['heros']=  [[self.heros_list[x], self.heros_instance[x].heath if self.heros_instance[x] else None]  for x in range(len(self.heros_list))] #
+            msg['heros']=  [[self.heros_list[x], self.heros_instance[x].health if self.heros_instance[x] else None]  for x in range(len(self.heros_list))] #
             msg['cards']=[x.all_the_cards_holders() if x else None   for x in self.heros_instance]
             for inj,j in enumerate(msg['cards']):  
                 if j and ind!=inj: j[0]=[None]*len(j[0])
                         
             if ind in replylist: msg['reply']=True
-            tmsg=json.dumps(msg)
-            i.send(tmsg.encode('utf-8'))        
+            
+            res=self.send_map_str(i, msg)
+            
+        
             
     #游戏中用到的一些事件
     def on_gamestart(self):  #1
@@ -127,10 +157,9 @@ class base:
         hero_list=random.sample(list( range( len(Persons.class_list) )), cnt_ned)
         for ind,i in enumerate(self.socket_list):
             msg=Message.form_pickhero(ind,  hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect] , reply=True )
-            msg=json.dumps(msg)
-            i.send(msg.encode('utf-8'))
+            self.send_map_str(i, msg)
         
-        ret=self.send_recv_onebyone(self.socket_list, Message.msg_types[11])
+        ret=self.send_recv_onebyone(self.socket_list, [Message.msg_types[11]])
         for ind,i in enumerate(ret):
             if i and i['heros'] and (i['heros'][0] in hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect]):
                 self.heros_list[ind]=i['heros'][0]                
@@ -141,14 +170,9 @@ class base:
         
     def on_gameinited(self): #3
         #初始时游戏信息
-        for ind,i in enumerate(self.socket_list):
-            cards_tep=self.get_cards(Config.Cardsforinit)
-            
-            self.heros_instance[ind].addcard(cards_tep)
-            
-            msg=Message.form_gameinited(ind, self.heros_list[ind], cards_tep, self.heros_list,  reply=False)
-            msg=json.dumps(msg)
-            i.send(msg.encode('utf-8'))
+        msg=Message.form_gameinited(0, 0, 0, 0,  reply=False)
+        self.send_msg_to_all(msg)
+        
             
     def on_getcard(self, cnt, end, start=None,  public=False,  reply=False):
         if not start: cards_tep=self.get_cards(cnt)
@@ -163,10 +187,15 @@ class base:
         for ind,i in enumerate(self.socket_list):
             tep=[None]*cnt
             if public or ind==end: tep=cards_tep
-                          
-            msg=Message.form_getcard(ind, self.heros_list[ind], self.heros_instance[ind].cards, end,start, tep, reply=( (ind==end) and reply))
-            msg=json.dumps(msg)
-            i.send(msg.encode('utf-8'))
+            
+            heros=[[self.heros_list[x], self.heros_instance[x].health if self.heros_instance[x] else None]  for x in range(len(self.heros_list))]
+            cards=[x.all_the_cards_holders() if x else None   for x in self.heros_instance]
+            for inj,j in enumerate(cards):  
+                if j and ind!=inj: j[0]=[None]*len(j[0])
+            
+            msg=Message.form_getcard(ind, heros, cards, [end],[start], tep, reply=( (ind==end) and reply))
+            self.send_map_str(i, msg)
+        
         self.heros_instance[end].addcard(cards_tep)
         
     ############################################################################################

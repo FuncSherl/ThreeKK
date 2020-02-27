@@ -241,12 +241,17 @@ class base:
     #以下为工具函数，每个类中相同，不必重写
     def listen_distribute(self, msgwant=[]):
         self.function_table=Message.make_msg2fun(self)
-        msg=self.room.send_recv(self.mysocket)
-        if msg:
-            if msgwant and msg['msg_name'] not in msgwant: return self.listen_distribute(msgwant)
-            return self.function_table[msg['msg_name']](msg)
-        else:
-            return None
+        msg_list=self.room.send_recv(self.mysocket)
+        
+        if not msg_list: return msg_list
+        
+        for ind,msg in enumerate(msg_list):
+            if msgwant and msg['msg_name'] not in msgwant: continue
+            
+            name=msg['msg_name']
+            return self.function_table[name](msg)
+        
+        return self.listen_distribute(msgwant)
     ###################################################################  每次准备出牌前的处理,如添加可选择的目标数目
     def ask_armers_init_playcard(self, card=None):
         #出牌前询问武器技能发动,return True表示继续后面的出牌进程，否则重新开始出牌

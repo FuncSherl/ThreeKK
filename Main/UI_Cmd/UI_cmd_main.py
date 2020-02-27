@@ -170,34 +170,69 @@ class UI_cmd:
         :等待回复
         :若msg不为空则先发送msg
         '''
-        if msg is not None: c_sock.send(msg.encode('utf-8'))
+        if msg: self.send_message_str(c_sock, msg)
         try:
             tmsg=c_sock.recv(Config.BuffSize)
             
             if not tmsg: return None
-            
+            print ('recv:',tmsg)
         except  socket.timeout:
             print ('ERROR:detected timeout')
             return None
         except Exception as e:
             print ('unexpected error:', str(e))
             return None
-        return json.loads(tmsg.decode('utf-8'))
+        msg_list_str=tmsg.decode('utf-8')
+        msg_list=msg_list_str.split(Config.Message_tail)
+        ret=[json.loads(x) for x in msg_list if x]
+        return ret
+    
+    
+    def send_map_str(self, socket, messagemap):
+        # 统一处理发送map 形式的消息, 注意输入的messagemap为type：dict
+        strm=json.dumps(messagemap)
+        strm+=Config.Message_tail
+        try:
+            res=socket.send(strm.encode('utf-8'))
+        except Exception as e:
+            print ('send error:', str(e))
+            return None
+        return res
+    
+    def send_message_str(self, socket, strm):
+        # 统一处理发送map 形式的消息, 注意输入的messagemap为type：dict
+        #strm=json.dumps(messagemap)
+        strm+=Config.Message_tail
+        try:
+            res=socket.send(strm.encode('utf-8'))
+        except Exception as e:
+            print ('send error:', str(e))
+            return None
+        return res
+    
     
     def listen_distribute(self, msgwant=[]):
         self.function_table=Message.make_msg2fun(self)
-        msg=self.send_recv(self.socket)
+        msg_list=self.send_recv(self.socket)
         
-        if msg:
-            if msgwant and msg['msg_name'] not in msgwant: return self.listen_distribute(msgwant)
-            #print (self.function_table)
-            print (msg)
-            return self.function_table[msg['msg_name']](msg)
-        else:
-            return None
+        if not msg_list: return msg_list
+        
+        for ind,msg in enumerate(msg_list):
+            if msgwant and msg['msg_name'] not in msgwant: continue
+            
+            name=msg['msg_name']
+            return self.function_table[name](msg)
+        
+        return self.listen_distribute(msgwant)
+        
                 
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息
+    def common_msg_process(self, msg):
+        pass
+    
     def on_heartbeat(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         if msg and msg['reply']:
             msg['reply']=False
             msg=json.dumps(msg)
@@ -205,40 +240,63 @@ class UI_cmd:
         return True        
 
     def on_playcard(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         return msg
         
     
     def on_judgement(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         return False
     
     def on_getcard(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         return False
     
     def on_roundstart(self, msg=None):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
+        
         return False
         
     def on_roundend(self, msg=None):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         return False            
         
     def on_gamestart(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         print ('Game Start!')
         return True
     
     def on_gameend(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         self.game_status=False
         return True
     
     def on_skillstart(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         return False
     
     def on_equipstart(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         return False
     
     def on_inform_beforegame(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         print (msg['third'])
         return True
     
     def on_pickhero(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         hero_sel=msg['heros']
         if not hero_sel: 
             print ('select heros ERROR!')
@@ -248,9 +306,13 @@ class UI_cmd:
         
     
     def on_gameinited(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         return False
     
     def on_roundend_dropcard(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
         dropedcards=[self.cards[x]  for x in msg['third']]
         self.cards=[self.cards[x]  for x in range(len(self.cards)) if (x not in msg['third'])]
         self.room.drop_cards(dropedcards)
@@ -259,6 +321,7 @@ class UI_cmd:
         
     
     def on_askselect(self, msg):
+        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         #返回的msg中third中为用户选择，forth为选择的card，
         #return False
         if not msg['third'] or not msg['third'][0]:

@@ -34,8 +34,7 @@ class Server:
         :向客户端发送心跳包，等待回复，确认连接
         '''
         msg=Message.form_heartbeat(reply=True)
-        msg=json.dumps(msg)
-        c_sock.send(msg.encode('utf-8'))
+        if not Rooms_base.base.send_map_str(c_sock, msg): return False
         try:
             tmsg=c_sock.recv(Config.BuffSize)
             if not tmsg: return False
@@ -97,7 +96,7 @@ class Server:
         
 if __name__ == '__main__':
     tep=Server()
-    tep.main_loop(2)
+    tep.main_loop(1)
     tep.cleanup()
         
         

@@ -20,3 +20,5 @@ Card_num_max=13
 Card_num_min=1
 
 All_people_cnt=20   #当向所有人出牌时，目标数目
+
+Message_tail='#*#'
