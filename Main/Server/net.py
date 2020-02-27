@@ -4,7 +4,7 @@ Created on 2020年2月12日
 @author: sherl
 '''
 import socket
-import sys
+import sys,json
 from Common import Config,Message
 from Rooms import base as Rooms_base
 import threading
@@ -16,7 +16,7 @@ class Server:
         self.serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
         
         # 获取本地主机名
-        self.host = socket.gethostname()
+        self.host = '0.0.0.0'#socket.gethostname()
         print ("hostname:",self.host)
         self.port = Config.Port
         
@@ -27,12 +27,15 @@ class Server:
         
         # 设置最大连接数，超过后排队
         self.serversocket.listen(5)
+        print ('Server Start!')
         
     def check_con(self, c_sock):
         '''
         :向客户端发送心跳包，等待回复，确认连接
         '''
-        c_sock.send(Message.form_heartbeat(reply=True))
+        msg=Message.form_heartbeat(reply=True)
+        msg=json.dumps(msg)
+        c_sock.send(msg.encode('utf-8'))
         try:
             tmsg=c_sock.recv(Config.BuffSize)
             if not tmsg: return False
@@ -49,12 +52,14 @@ class Server:
         ret=[]
         for i in sock_list:
             if self.check_con(i): ret.append(i)
+            else: print ('One Person Droped!')
         return ret
     
     def inform_all(self, sock_list, message):
         msg=Message.form_inform_beforegame(message, reply=False)
         for i in sock_list:
-            i.send(msg)
+            msg=json.dumps(msg)
+            i.send(msg.encode('utf-8'))
     
     
     def form_room(self, cnt=5, roomtype=Rooms_base.base):

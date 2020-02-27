@@ -74,7 +74,7 @@ class base:
         :等待回复
         :若msg不为空则先发送msg
         '''
-        if msg is not None: c_sock.send(msg)
+        if msg is not None: c_sock.send(msg.encode('utf-8'))
         try:
             tmsg=c_sock.recv(Config.BuffSize)
             if not tmsg: return None
@@ -85,7 +85,7 @@ class base:
         except:
             print ('unexpected error')
             return None
-        return json.loads(tmsg)
+        return json.loads(tmsg.decode('utf-8'))
     
     def send_recv_onebyone(self, sock_list, msg_want=None, msg=None):
         ret=[]
@@ -102,45 +102,44 @@ class base:
     def send_msg_to_all(self, msg, replylist=[]):
         for ind,i in enumerate(self.socket_list):
             msg['myid']=ind  #第几个玩家
-            msg['heros']=  [[self.heros_list[x], self.heros_instance[x].heath]  for x in range(len(self.heros_list))] #
-            msg['cards']=map(lambda x:    , [x.all_the_cards_holders() for x in self.heros_instance])
-            
-            
+            msg['heros']=  [[self.heros_list[x], self.heros_instance[x].heath if self.heros_instance[x] else None]  for x in range(len(self.heros_list))] #
+            msg['cards']=[x.all_the_cards_holders() if x else None   for x in self.heros_instance]
+            for inj,j in enumerate(msg['cards']):  
+                if j and ind!=inj: j[0]=[None]*len(j[0])
+                        
             if ind in replylist: msg['reply']=True
-            msg=json.dumps(msg)
-            i.send(msg)        
+            tmsg=json.dumps(msg)
+            i.send(tmsg.encode('utf-8'))        
             
     #游戏中用到的一些事件
-    def on_gamestart(self):
-        for ind, i in enumerate(self.socket_list):
-            msg=Message.form_gamestart(ind, reply=False)
-            msg=json.dumps(msg)
-            i.send(msg)
+    def on_gamestart(self):  #1
+        msg=Message.form_gamestart(0)
+        print (msg)
+        self.send_msg_to_all(msg)
+        
             
     def on_gameend(self):
-        for ind,i in enumerate(self.socket_list):
-            msg=Message.form_gameend(ind, reply=False)
-            msg=json.dumps(msg)
-            i.send(msg)
+        msg=Message.form_gameend(0)
+        self.send_msg_to_all(msg)
     
-    def on_pickhero(self):
+    def on_pickhero(self):  #2
         cnt_ned=len(self.socket_list)*Config.HerosforSelect
         hero_list=random.sample(list( range( len(Persons.class_list) )), cnt_ned)
         for ind,i in enumerate(self.socket_list):
             msg=Message.form_pickhero(ind,  hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect] , reply=True )
             msg=json.dumps(msg)
-            i.send(msg)
+            i.send(msg.encode('utf-8'))
         
         ret=self.send_recv_onebyone(self.socket_list, Message.msg_types[11])
         for ind,i in enumerate(ret):
-            if not i:
-                self.heros_list[ind]=[hero_list[ind*Config.HerosforSelect]]
-            else:
-                self.heros_list[ind]=i['myhero']
-            self.heros_instance[ind]=  [Persons.class_list[x](self, ind)  for x in self.heros_list[ind] ]
+            if i and i['heros'] and (i['heros'][0] in hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect]):
+                self.heros_list[ind]=i['heros'][0]                
+            else: self.heros_list[ind]=hero_list[ind*Config.HerosforSelect]  
+                         
+            self.heros_instance[ind]=  Persons.class_list[self.heros_list[ind] ](self, ind)
         #到这里已经英雄选择完成
         
-    def on_gameinited(self):
+    def on_gameinited(self): #3
         #初始时游戏信息
         for ind,i in enumerate(self.socket_list):
             cards_tep=self.get_cards(Config.Cardsforinit)
@@ -149,7 +148,7 @@ class base:
             
             msg=Message.form_gameinited(ind, self.heros_list[ind], cards_tep, self.heros_list,  reply=False)
             msg=json.dumps(msg)
-            i.send(msg)
+            i.send(msg.encode('utf-8'))
             
     def on_getcard(self, cnt, end, start=None,  public=False,  reply=False):
         if not start: cards_tep=self.get_cards(cnt)
@@ -167,25 +166,25 @@ class base:
                           
             msg=Message.form_getcard(ind, self.heros_list[ind], self.heros_instance[ind].cards, end,start, tep, reply=( (ind==end) and reply))
             msg=json.dumps(msg)
-            i.send(msg)
+            i.send(msg.encode('utf-8'))
         self.heros_instance[end].addcard(cards_tep)
         
     ############################################################################################
     
-    def roundstart(self, startid):
+    def roundstart(self, startid): #4
         msg=Message.form_roundstart(None, None, None, startid, reply=False)
         self.send_msg_to_all(msg)
         
         self.heros_instance[startid].roundstart()        
         #以上完成回合开始时的准备工作
         
-    def playcardstart(self, startid):            
+    def playcardstart(self, startid):     #5       
         #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, 
         
         self.heros_instance[startid].playcardstart()
             
             
-    def roundend(self, startid):
+    def roundend(self, startid):#6
         msg=Message.form_roundend(None, None, None, startid, reply=False)
         self.send_msg_to_all(msg)
         self.heros_instance[startid].roundend()

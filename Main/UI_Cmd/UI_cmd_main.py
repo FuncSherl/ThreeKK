@@ -47,12 +47,13 @@ class UI_cmd:
         #char->ascll ord('c')
         #ascll->char chr(97)
         #for i in self.pannel: print (''.join(i))
-        self.update()
+        #self.update()
         
         
         
     def draw_clients(self):
         descrs=[x.get_describe() for x in self.person_instance]  #这里必须先获取描述信息，目的是更新各个person对象中的mlen变量
+        if not descrs: return
         #print (descrs)
         mlen=max( [x.mlen for x in self.person_instance if x.playerid!=self.myindex] )
         #r=int ((self.width-mlen)/2 )
@@ -69,10 +70,12 @@ class UI_cmd:
             st=(st-1)%len(self.person_instance)
         
     def draw_me(self):
+        if not self.person_instance:return
         desr=self.person_instance[self.myindex].get_describe()
         self.draw_panel(desr, self.height, self.width) #放到右下角，自动识别更改
         
     def draw_my_cards(self):
+        if not self.person_instance:return
         res=self.person_instance[self.myindex].form_all_cards()
         mlen=self.person_instance[self.myindex].mlen
         mhight=self.person_instance[self.myindex].mhigh
@@ -167,9 +170,10 @@ class UI_cmd:
         :等待回复
         :若msg不为空则先发送msg
         '''
-        if msg is not None: c_sock.send(msg)
+        if msg is not None: c_sock.send(msg.encode('utf-8'))
         try:
             tmsg=c_sock.recv(Config.BuffSize)
+            
             if not tmsg: return None
             
         except  socket.timeout:
@@ -178,19 +182,26 @@ class UI_cmd:
         except Exception as e:
             print ('unexpected error:', str(e))
             return None
-        return json.loads(tmsg)
+        return json.loads(tmsg.decode('utf-8'))
     
     def listen_distribute(self, msgwant=[]):
         self.function_table=Message.make_msg2fun(self)
-        msg=self.room.send_recv(self.mysocket)
+        msg=self.send_recv(self.socket)
+        
         if msg:
             if msgwant and msg['msg_name'] not in msgwant: return self.listen_distribute(msgwant)
+            #print (self.function_table)
+            print (msg)
             return self.function_table[msg['msg_name']](msg)
         else:
             return None
                 
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息
     def on_heartbeat(self, msg):
+        if msg and msg['reply']:
+            msg['reply']=False
+            msg=json.dumps(msg)
+            self.socket.send(msg.encode('utf-8'))
         return True        
 
     def on_playcard(self, msg):
@@ -210,10 +221,12 @@ class UI_cmd:
         return False            
         
     def on_gamestart(self, msg):
-        return False
+        print ('Game Start!')
+        return True
     
     def on_gameend(self, msg):
-        return False
+        self.game_status=False
+        return True
     
     def on_skillstart(self, msg):
         return False
@@ -222,10 +235,17 @@ class UI_cmd:
         return False
     
     def on_inform_beforegame(self, msg):
-        return False
+        print (msg['third'])
+        return True
     
     def on_pickhero(self, msg):
-        return False
+        hero_sel=msg['heros']
+        if not hero_sel: 
+            print ('select heros ERROR!')
+            return False
+        self.sel_hero_draw(hero_sel)
+        self.update()
+        
     
     def on_gameinited(self, msg):
         return False
@@ -252,11 +272,11 @@ class UI_cmd:
         # 创建 socket 对象
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)         
-            s.settimeout(Config.Timeout)
+            #s.settimeout(Config.Timeout)
             # 连接服务，指定主机和端口
             s.connect((ipstr, Config.Port))
             
-            s.settimeout(None)
+            #s.settimeout(None)
         except  socket.timeout:
             print ('ERROR:detected timeout server not online')
             return None
