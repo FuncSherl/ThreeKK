@@ -21,6 +21,7 @@ class person(object):
         '''
         self.heroid=id
         self.name=Persons.class_list[id].name_pinyin
+        self.name_chinese=Persons.class_list[id].name
         self.health=Persons.class_list[id].blood
         self.describ_hero=Persons.class_list[id].describ_skill_list
         self.cards=[]
@@ -37,29 +38,26 @@ class person(object):
         self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus=all_the_cards_holders
         
     
-    def add_box(self, info_list):
-        mlen=max([len(x.encode('utf-8')) for x in info_list])+2
+    def add_box(self, info_list, withleft=True, withright=True):
+        mlen=max([len(x.encode('utf-8')) for x in info_list])+int(withright)+int(withleft)
         self.mlen=mlen
         for i in range(len(info_list)):
-            info_list[i]='|'+info_list[i]+' '*(mlen-2-len(info_list[i].encode('utf-8')))+'|'
+            info_list[i]=''.join( ['|' if withleft else '',info_list[i], (' ' if withright else '')*(mlen-2-len(info_list[i])), '|' if withright else ''] )
         
         info_list.insert(0, '-'*mlen)
         info_list.append('-'*mlen)
         return info_list
     
     def get_hero_describe(self):
-        ret= ['HERO:'+self.name+'  ' +'H'*self.health]
-        mlen=max([len(x.encode('utf-8')) for x in ret])
-        mlen=int(mlen/2)  #中文与英文显示对应
+        ret= ['HERO:'+self.name_chinese+'  BLOOD:' +'*'*self.health]
+        mlen=max([len(x) for x in ret])
+        #mlen=int(mlen/2)  #中文与英文显示对应
         mlen=max(mlen, 12)
         
         for i in self.describ_hero:
             if not i : continue
-            st=0
-            while st<len(i):
-                ret.append(i[st: st+mlen])
-                st+=mlen
-        return self.add_box(ret)
+            ret.append(i)            
+        return self.add_box(ret, False, False)
                 
     def to_red(self, str):
         return '\033[1;35;0m'+str+' \033[0m'

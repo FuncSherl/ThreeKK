@@ -8,7 +8,7 @@ import os,math
 import Cards,Persons,Rooms
 from Common import Config,Message
 from UI_Cmd.person import person 
-import socket 
+import socket ,time
 import sys,json
 import numpy as np
 import platform
@@ -16,7 +16,7 @@ syst = platform.system()
 
 
 class UI_cmd:        
-    height=30-1  #cmd为30行
+    height=30-3  #cmd为30行
     width=120 #120列个字符
     
 
@@ -113,13 +113,15 @@ class UI_cmd:
         gap=int(  (self.width-sum(mlist))  /  (len(heroidlist)+1) )
         
         stx=0
-        sty=int(self.height/5)
+        sty=0
         for i in range(len(heroidlist)):
-            self.pannel[sty-2][stx+int( mlist[i]/2)]=i
-            self.pannel[sty-1][stx+int( mlist[i]/2)]='V'
-            stx+=gap
+            #self.pannel[sty-2][stx+int( mlist[i]/2)]=str(i)
+            #self.pannel[sty-1][stx+int( mlist[i]/2)]='V'
+            desc_list[i].insert(1, 'INDEX:%d'%i)
+            #stx+=gap
             self.draw_panel(desc_list[i], sty, stx)
-            stx+=mlist[i]
+            sty+=len(desc_list[i])
+            #print(desc_list[i])
             
             
     def update(self):
@@ -129,7 +131,9 @@ class UI_cmd:
         #for test
         #self.draw_play_cards(person().cards)
         
-        for i in self.pannel: print (''.join(i))
+        for ind,i in enumerate(self.pannel[:self.height-1]): 
+            #i[:2]='% 2d'%ind
+            print (''.join(i)[: int( self.width-1 )])
             
         
         
@@ -137,7 +141,7 @@ class UI_cmd:
     
     def main_loop(self):
         while self.game_status :
-            self.listen_distribute()
+            if not self.listen_distribute():time.sleep(0.5)
         
     
     
@@ -194,7 +198,7 @@ class UI_cmd:
     def listen_distribute(self, msgwant=[]):
         #return 是否执行了msg中的对应函数
         self.function_table=Message.make_msg2fun(self)
-        msg_list=self.send_recv(self.mysocket)
+        msg_list=self.send_recv(self.socket)
         
         if not msg_list: return msg_list
         ret=False
