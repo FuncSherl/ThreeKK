@@ -13,7 +13,7 @@ class person_zhouyu(base.base):
     describ='摸摸摸'
     name_pinyin='ZhouYu'
     
-    describ_skill1=''
+    describ_skill1='英姿：回合开始时多模一张牌'
     describ_skill2=''
     describ_skill3=''
     describ_skill4=''

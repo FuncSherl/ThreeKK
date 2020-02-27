@@ -244,14 +244,15 @@ class base:
         msg_list=self.room.send_recv(self.mysocket)
         
         if not msg_list: return msg_list
-        
+        ret=False
         for ind,msg in enumerate(msg_list):
             if msgwant and msg['msg_name'] not in msgwant: continue
             
             name=msg['msg_name']
-            return self.function_table[name](msg)
+            self.function_table[name](msg)
+            ret=True
+        return ret
         
-        return self.listen_distribute(msgwant)
     ###################################################################  每次准备出牌前的处理,如添加可选择的目标数目
     def ask_armers_init_playcard(self, card=None):
         #出牌前询问武器技能发动,return True表示继续后面的出牌进程，否则重新开始出牌

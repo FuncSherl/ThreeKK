@@ -12,7 +12,7 @@ class person_zhangfei(base.base):
     describ='砍砍砍'
     name_pinyin='ZhangFei'
     
-    describ_skill1=''
+    describ_skill1='咆哮：出牌阶段可以出任意多张杀'
     describ_skill2=''
     describ_skill3=''
     describ_skill4=''

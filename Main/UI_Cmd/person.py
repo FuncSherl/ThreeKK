@@ -19,11 +19,11 @@ class person(object):
         '''
         :#这里的id为英雄的标识id
         '''
-        self.playerid=id
+        self.heroid=id
         self.name=Persons.class_list[id].name_pinyin
         self.health=Persons.class_list[id].blood
         self.describ_hero=Persons.class_list[id].describ_skill_list
-        self.cards=[[1,1,1], [2,3,12], [3,3,10], [0,1,2],[5,2,11], [4,0,2]]
+        self.cards=[]
         self.armers=[]
         self.shields=[]
         self.horse_minus=[]
@@ -33,7 +33,7 @@ class person(object):
         self.mhigh=len(self.mydescr)
         self.alive=True
         
-    def set_cards(self, all_the_cards_holders):
+    def set_all_cards(self, all_the_cards_holders):
         self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus=all_the_cards_holders
         
     

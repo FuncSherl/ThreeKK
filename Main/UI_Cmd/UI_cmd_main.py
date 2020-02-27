@@ -5,7 +5,7 @@ Created on 2020年2月26日
 @author: sherl
 '''
 import os,math
-import Cards,Persons
+import Cards,Persons,Rooms
 from Common import Config,Message
 from UI_Cmd.person import person 
 import socket 
@@ -115,6 +115,8 @@ class UI_cmd:
         stx=0
         sty=int(self.height/5)
         for i in range(len(heroidlist)):
+            self.pannel[sty-2][stx+int( mlist[i]/2)]=i
+            self.pannel[sty-1][stx+int( mlist[i]/2)]='V'
             stx+=gap
             self.draw_panel(desc_list[i], sty, stx)
             stx+=mlist[i]
@@ -170,12 +172,12 @@ class UI_cmd:
         :等待回复
         :若msg不为空则先发送msg
         '''
-        if msg: self.send_message_str(c_sock, msg)
+        if msg: Rooms.base.base.send_message_str(c_sock, msg)
         try:
             tmsg=c_sock.recv(Config.BuffSize)
             
             if not tmsg: return None
-            print ('recv:',tmsg)
+            
         except  socket.timeout:
             print ('ERROR:detected timeout')
             return None
@@ -185,50 +187,39 @@ class UI_cmd:
         msg_list_str=tmsg.decode('utf-8')
         msg_list=msg_list_str.split(Config.Message_tail)
         ret=[json.loads(x) for x in msg_list if x]
+        print ('recv:',ret)
         return ret
     
     
-    def send_map_str(self, socket, messagemap):
-        # 统一处理发送map 形式的消息, 注意输入的messagemap为type：dict
-        strm=json.dumps(messagemap)
-        strm+=Config.Message_tail
-        try:
-            res=socket.send(strm.encode('utf-8'))
-        except Exception as e:
-            print ('send error:', str(e))
-            return None
-        return res
-    
-    def send_message_str(self, socket, strm):
-        # 统一处理发送map 形式的消息, 注意输入的messagemap为type：dict
-        #strm=json.dumps(messagemap)
-        strm+=Config.Message_tail
-        try:
-            res=socket.send(strm.encode('utf-8'))
-        except Exception as e:
-            print ('send error:', str(e))
-            return None
-        return res
-    
-    
     def listen_distribute(self, msgwant=[]):
+        #return 是否执行了msg中的对应函数
         self.function_table=Message.make_msg2fun(self)
-        msg_list=self.send_recv(self.socket)
+        msg_list=self.send_recv(self.mysocket)
         
         if not msg_list: return msg_list
-        
+        ret=False
         for ind,msg in enumerate(msg_list):
             if msgwant and msg['msg_name'] not in msgwant: continue
             
             name=msg['msg_name']
-            return self.function_table[name](msg)
-        
-        return self.listen_distribute(msgwant)
+            self.function_table[name](msg)
+            ret=True
+        return ret
         
                 
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息
     def common_msg_process(self, msg):
-        pass
+        self.myindex=msg['myid']
+        if self.person_instance:
+            for ind,i in enumerate(msg['heros']):
+                if not i: continue
+                #[[heroid, health],...  ]
+                if self.person_instance[ind].heroid!=i[0]:
+                    self.person_instance[ind]=person(i[0])
+                self.person_instance[ind].health=i[1]
+            for ind,i in enumerate(msg['cards']):##[ [cards, armers, shields, horses_minus, horse_plus], ... ]
+                if not i: continue
+                self.person_instance[ind].set_all_cards(i)
     
     def on_heartbeat(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
@@ -303,7 +294,7 @@ class UI_cmd:
             return False
         self.sel_hero_draw(hero_sel)
         self.update()
-        
+        res=input('请选择人物序号(default:0):')
     
     def on_gameinited(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
