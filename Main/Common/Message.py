@@ -22,8 +22,8 @@ def make_msg2fun(obj_class):
 def form_msg(msg_name, myid=None, myhero=None, mycards=None, start=None, end=None,  third=None, forth=None, fifth=None, reply=True):
     kep={'msg_name':msg_name,
          'myid':myid,
-         'myhero':myhero,
-         'mycards':mycards,
+         'heros':myhero, #[[heroid, health],...  ] from 0->cnt
+         'cards':mycards, #[ [cards, armers, shields, horses_minus, horse_plus], ... ] from 0->cnt按照playerid排序 ，其中非myid玩家的cards为手牌，其他人的为None，只能判断数目
          'start':start,
          'end':end,
          'third':third,

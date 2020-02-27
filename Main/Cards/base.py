@@ -12,6 +12,7 @@ from Common import Config,Message
 class base:
     cards_num_color=[0,0,0,0] #黑桃、梅花、红心、方片
     name='base'
+    name_pinyin='base'
     type=Config.Card_type_enum[0] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
     against_names=[]
     damage=0

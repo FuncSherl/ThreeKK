@@ -10,6 +10,7 @@ import Persons.base as base
 class person_zhangfei(base.base):
     name='张飞'
     describ='砍砍砍'
+    name_pinyin='ZhangFei'
     
     describ_skill1=''
     describ_skill2=''

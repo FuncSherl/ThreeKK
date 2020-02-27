@@ -11,7 +11,7 @@ import Persons,Cards
 class base:
     def __init__(self, socket_list):
         self.socket_list=socket_list        
-        self.heros_list=[None for i in range(len(self.socket_list))]
+        self.heros_list=[None for i in range(len(self.socket_list))]  #存储英雄的id
         self.heros_instance=[None for i in range(len(self.socket_list))]
         self.campid=list( range(len(self.socket_list)) )
         
@@ -101,10 +101,11 @@ class base:
     
     def send_msg_to_all(self, msg, replylist=[]):
         for ind,i in enumerate(self.socket_list):
-            msg['myid']=ind
-            msg['myhero']=self.heros_list[ind]
-            msg['mycards']=self.heros_instance[ind].all_the_cards_holders()
-            #msg['reply']=False
+            msg['myid']=ind  #第几个玩家
+            msg['heros']=  [[self.heros_list[x], self.heros_instance[x].heath]  for x in range(len(self.heros_list))] #
+            msg['cards']=map(lambda x:    , [x.all_the_cards_holders() for x in self.heros_instance])
+            
+            
             if ind in replylist: msg['reply']=True
             msg=json.dumps(msg)
             i.send(msg)        

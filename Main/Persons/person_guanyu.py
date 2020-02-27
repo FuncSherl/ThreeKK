@@ -10,6 +10,7 @@ import Persons.base as base
 class person_guanyu(base.base):
     name='关羽'
     describ='干干干'
+    name_pinyin='GuanYu'
     
     describ_skill1='武圣：出牌阶段可以将手牌中任意红牌作为一张杀使用'
     describ_skill2=''

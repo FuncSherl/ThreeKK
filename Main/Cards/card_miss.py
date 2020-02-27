@@ -12,6 +12,7 @@ class card_miss(base_basic.base):
     cards_num_color=[0,0,3,12]  #黑桃、梅花、红心、方片
     active=False    #能主动被出牌吗
     name='闪'
+    name_pinyin='Miss'
     against_names=[]
     target_nums=0  #能指定几个目标
     damage=0

@@ -11,6 +11,7 @@ import Cards
 
 class base:
     name='base'
+    name_pinyin='base'
     describ='base class'
     
     describ_skill1=''

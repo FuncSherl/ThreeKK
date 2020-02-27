@@ -12,6 +12,7 @@ class card_attack(base_basic.base):
     cards_num_color=[7,14,3,6]  #黑桃、梅花、红心、方片
     active=True    #能主动出牌吗[true, false, none]
     name='杀'
+    name_pinyin='ATTACK'
     against_names=['闪']
     target_nums=1  #能指定几个目标
     damage=1

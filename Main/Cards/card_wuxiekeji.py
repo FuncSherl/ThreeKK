@@ -12,6 +12,7 @@ from Cards import base_skill
 class card_wuxiekeji(base_skill.base):
     cards_num_color=[1,2,0,0] #黑桃、梅花、红心、方片
     name='无懈可击'
+    name_pinyin='WuXieKeJi'
     #type=Config.Card_type_enum[1] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
     against_names=['无懈可击']
     damage=0

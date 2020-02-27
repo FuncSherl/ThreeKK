@@ -11,6 +11,7 @@ class card_tao(base_basic.base):
     cards_num_color=[0,0,7,1]  #黑桃、梅花、红心、方片
     active=None    #能主动出牌吗[true, false, none]
     name='桃'
+    name_pinyin='Tao'
     against_names=[]
     target_nums=1  #能指定几个目标
     damage=0

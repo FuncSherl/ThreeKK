@@ -4,63 +4,162 @@ Created on 2020年2月26日
 
 @author: sherl
 '''
-import os
+import os,math
 import Cards,Persons
 from Common import Config,Message
-import socket
+from UI_Cmd.person import person 
+import socket 
 import sys,json
 import numpy as np
+import platform
+syst = platform.system()
 
 
-class UI_cmd:
+class UI_cmd:        
+    height=30-1  #cmd为30行
+    width=120 #120列个字符
+    
+
+    user_stx=int(width/4)
+    user_sty=int(height*4/5)
+    
+    playarea_y=person.mheight+10
+    
+    center_x=int(width/2)
+    center_y=int(  (center_x**2 + user_sty**2)/ (2*user_sty)   )
+    start_angle=math.acos(center_x*1.0/center_y)
+    
+    
     def __init__(self, ipstr='127.0.0.1'):
         self.ipstr=ipstr
         self.socket=self.connect_server(self.ipstr)
-        self.height=30  #cmd为30行
-        self.width=120 #120列个字符
+
         self.pannel=[]
         for i in range(self.height):
             self.pannel.append([])
             for j in range(self.width):
                 self.pannel[-1].append(' ')
+        #最多支持6个人才不会重叠
+        self.person_instance=[]
+        self.myindex=0
+        self.game_status=True
         #self.pannel[:,:]=ord(' ')
         #char->ascll ord('c')
         #ascll->char chr(97)
-        for i in self.add_box(self.form_other_person()  ): print (i)
+        #for i in self.pannel: print (''.join(i))
+        self.update()
+        
+        
+        
+    def draw_clients(self):
+        descrs=[x.get_describe() for x in self.person_instance]  #这里必须先获取描述信息，目的是更新各个person对象中的mlen变量
+        #print (descrs)
+        mlen=max( [x.mlen for x in self.person_instance if x.playerid!=self.myindex] )
+        #r=int ((self.width-mlen)/2 )
+        r=self.center_y
+        angel=(math.pi-2*self.start_angle)/( len(self.person_instance))
+        
+        st=(self.myindex-1)%len(self.person_instance)
+        for i in range(1, len(self.person_instance)):
+            tx=int( self.center_x- math.cos(self.start_angle+i*angel)*r-self.person_instance[st].mlen/2 )
+            ty=int( self.center_y- math.sin(self.start_angle+i*angel)*r)
+
+            self.draw_panel(descrs[st], ty, tx)
+            
+            st=(st-1)%len(self.person_instance)
+        
+    def draw_me(self):
+        desr=self.person_instance[self.myindex].get_describe()
+        self.draw_panel(desr, self.height, self.width) #放到右下角，自动识别更改
+        
+    def draw_my_cards(self):
+        res=self.person_instance[self.myindex].form_all_cards()
+        mlen=self.person_instance[self.myindex].mlen
+        mhight=self.person_instance[self.myindex].mhigh
+        stx=0
+        sty=self.height-mhight-1
+        
+        self.draw_panel(['*'*self.width], sty, stx)
+        
+        sty+=2
+        
+        for ind,i in enumerate(res):
+            tstr=str(ind)+'>'+i+'    '
+            if stx+len(tstr.encode('utf-8'))+mlen+1>self.width:
+                stx=0
+                sty+=2
+            self.draw_panel([tstr], sty, stx)
+            stx+=len(tstr.encode('utf-8'))
+            
+    def draw_play_cards(self, cards):
+        descs=[person.form_card(x) for x in cards]
+        mlen=max( [len(x) for x in descs] )
+        stx=int((self.width-mlen)/2)
+        self.draw_panel(descs, self.playarea_y-len(cards), stx)
+        
+            
+    def normal_draw_all(self):
+        #正常对局下的每次打印
+        self.draw_clients()
+        self.draw_me()
+        self.draw_my_cards()
+        
+    def sel_hero_draw(self, heroidlist):
+        desc_list=[person(y).get_hero_describe() for y in heroidlist]
+        mlist=[ max([len(x.encode('utf-8')) for x in y])  for y in desc_list]
+        gap=int(  (self.width-sum(mlist))  /  (len(heroidlist)+1) )
+        
+        stx=0
+        sty=int(self.height/5)
+        for i in range(len(heroidlist)):
+            stx+=gap
+            self.draw_panel(desc_list[i], sty, stx)
+            stx+=mlist[i]
+            
+            
+    def update(self):
+        self.clean_screen()
+        self.normal_draw_all()
+        
+        #for test
+        #self.draw_play_cards(person().cards)
+        
+        for i in self.pannel: print (''.join(i))
+            
+        
+        
         
     
     def main_loop(self):
-        pass
+        while self.game_status :
+            self.listen_distribute()
         
     
     
-    def draw_panel(self, info_list, y, x):
+    def draw_panel(self, info_list, yy, xx):
         #y行x列为起点
         mlen=max([len(x.encode('utf-8')) for x in info_list])
-        if mlen >self.width or len(info_list)>self.height: 
-            print ('ERROR: str too long')
-            return False
         
-        y=min(y, self.height-len(info_list))
-        x=min(x, self.width-mlen)
-        
-        
+        #截断
+        info_list=info_list[:self.height] 
+        info_list=[x[:self.width] for x in info_list]
+            
+        yy=min(yy, self.height-len(info_list))
+        yy=max(yy, 0)
+        xx=min(xx, self.width-mlen)
+        xx=max(xx, 0)
+        for ind,i in enumerate(info_list):
+            for j in range(len(i)):
+                self.pannel[yy+ind][j+xx]=i[j]        
+                
+    def clean_panel(self):
+        for i in self.pannel:
+            for j in range(len(i)):
+                i[j]=' '
     
-    def add_box(self, info_list):
-        mlen=max([len(x.encode('utf-8')) for x in info_list])+2
-        for i in range(len(info_list)):
-            info_list[i]='|'+info_list[i]+' '*(mlen-2-len(info_list[i].encode('utf-8')))+'|'
-        
-        info_list.insert(0, '-'*mlen)
-        info_list.append('-'*mlen)
-        return info_list
-    
-    def form_other_person(self, name='test', health=1, armers=[], shields=[], cards=[]):
-        return ['HERO:'+name+'  ' +'*'*health, 'ARMERS:'+','.join( [Cards.class_list[x[0]].name for x in armers]),\
-              'SHIELDS:'+','.join( [Cards.class_list[x[0]].name for x in shields]), 'CARDS:'+'N '*len(cards)]
-        
-    
-    
+    def clean_screen(self):
+        if syst == "Windows":  os.system("cls") # windows上执行cls命令
+        else: os.system("clear") # linux上执行clear命令
     
     ##########################################################消息分配区
     def send_recv(self, c_sock, msg=None):

@@ -12,6 +12,7 @@ from Cards import base_armer
 class card_qinggangjian(base_armer.base):
     cards_num_color=[1,0,0,0] #黑桃、梅花、红心、方片
     name='青釭剑'
+    name_pinyin='QingGangJian'
     against_names=[]
     #type=Config.Card_type_enum[2] #默认是XX牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
     active=True

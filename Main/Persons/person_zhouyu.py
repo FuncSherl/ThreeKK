@@ -11,6 +11,7 @@ import Persons.base as base
 class person_zhouyu(base.base):
     name='周瑜'
     describ='摸摸摸'
+    name_pinyin='ZhouYu'
     
     describ_skill1=''
     describ_skill2=''
