@@ -6,6 +6,7 @@ Created on 2020年2月26日
 '''
 import os,math
 import Cards,Persons,Rooms
+from Rooms import base
 from Common import Config,Message
 from UI_Cmd.person import person 
 import socket ,time
@@ -16,7 +17,7 @@ syst = platform.system()
 
 
 class UI_cmd:        
-    height=30-3  #cmd为30行
+    height=30-1  #cmd为30行
     width=120 #120列个字符
     
 
@@ -41,7 +42,7 @@ class UI_cmd:
                 self.pannel[-1].append(' ')
         #最多支持6个人才不会重叠
         self.person_instance=[]
-        self.myindex=0
+        self.myindex=None
         self.game_status=True
         #self.pannel[:,:]=ord(' ')
         #char->ascll ord('c')
@@ -142,7 +143,7 @@ class UI_cmd:
     def main_loop(self):
         while self.game_status :
             if not self.listen_distribute():time.sleep(0.5)
-        
+        print ('Room Destroyed!')
     
     
     def draw_panel(self, info_list, yy, xx):
@@ -269,7 +270,7 @@ class UI_cmd:
     
     def on_gameend(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
-        
+        print ('Game End!')
         self.game_status=False
         return True
     
@@ -299,6 +300,15 @@ class UI_cmd:
         self.sel_hero_draw(hero_sel)
         self.update()
         res=input('请选择人物序号(default:0):')
+        heroid=hero_sel[0]
+        if res and int(res)>=0 and int(res)<len(hero_sel):
+            heroid=hero_sel[int(res)]
+        if not msg['reply']: 
+            print ('ERROR:while select hero')
+            return
+        #做个消息发回去
+        msg['heros']=[heroid]
+        base.base.send_map_str(self.socket, msg)
     
     def on_gameinited(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
@@ -307,11 +317,11 @@ class UI_cmd:
     
     def on_roundend_dropcard(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
-        
+        '''
         dropedcards=[self.cards[x]  for x in msg['third']]
         self.cards=[self.cards[x]  for x in range(len(self.cards)) if (x not in msg['third'])]
         self.room.drop_cards(dropedcards)
-        
+        '''
         return True
         
     
@@ -319,9 +329,9 @@ class UI_cmd:
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         #返回的msg中third中为用户选择，forth为选择的card，
         #return False
-        if not msg['third'] or not msg['third'][0]:
-            return False
-        return msg['forth']
+        res=input(msg['third'])
+        
+        return True
     
     
     

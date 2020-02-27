@@ -166,10 +166,14 @@ class base:
             else: self.heros_list[ind]=hero_list[ind*Config.HerosforSelect]  
                          
             self.heros_instance[ind]=  Persons.class_list[self.heros_list[ind] ](self, ind)
+            print ('Player ',ind, ' select ',self.heros_instance[ind].name)
         #到这里已经英雄选择完成
         
     def on_gameinited(self): #3
         #初始时游戏信息
+        for i in self.heros_instance:
+            i.addcard(self.get_cards(Config.Cardsforinit))
+        
         msg=Message.form_gameinited(0, 0, 0, 0,  reply=False)
         self.send_msg_to_all(msg)
         
@@ -243,7 +247,7 @@ class base:
             st+=1
             st%=len(self.socket_list)
             
-
+        self.on_gameend()
 
 
 
