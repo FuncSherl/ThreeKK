@@ -15,11 +15,12 @@ class person(object):
     '''
     mheight=8
 
-    def __init__(self, id=0):
+    def __init__(self, id, myindex):
         '''
         :#这里的id为英雄的标识id
         '''
         self.heroid=id
+        self.myindex=myindex
         self.name=Persons.class_list[id].name_pinyin
         self.name_chinese=Persons.class_list[id].name
         self.health=Persons.class_list[id].blood
@@ -33,6 +34,8 @@ class person(object):
         self.mydescr=self.get_describe()
         self.mhigh=len(self.mydescr)
         self.alive=True
+        self.playcard_x=0
+        self.playcard_y=0
         
     def set_all_cards(self, all_the_cards_holders):
         self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus=all_the_cards_holders
@@ -63,7 +66,9 @@ class person(object):
         return '\033[1;35;0m'+str+' \033[0m'
     
     def form_other_person(self):
-        return ['HERO:'+self.name+'  H:' +'*'*self.health, 'ARMERS:'+','.join( [Cards.class_list[x[0]].name_pinyin for x in self.armers]),\
+        return ['HERO:'+self.name+'  H:' +'*'*self.health, \
+                'INDEX:%d'%self.myindex,\
+                'ARMERS:'+','.join( [Cards.class_list[x[0]].name_pinyin for x in self.armers]),\
               'SHIELDS:'+','.join( [Cards.class_list[x[0]].name_pinyin for x in self.shields]), \
               'HORSE+1:'+','.join( [Cards.class_list[x[0]].name_pinyin for x in self.horse_plus]),\
               'HORSE-1:'+','.join( [Cards.class_list[x[0]].name_pinyin for x in self.horse_minus]),  'CARDS:'+'N'*len(self.cards)]
@@ -78,9 +83,10 @@ class person(object):
         lmin=min([len(x) for x in Config.Card_color_enum])
         col=Config.Card_color_enum[card[1]].upper()
         return '['+name+':'+col+':'+'%d'%(card[2])+']'
-        
-    def form_all_cards(self):
-        return [self.form_card(x) for x in self.cards]
+    
+    @classmethod
+    def form_all_cards(self, cards_list):
+        return [self.form_card(x) for x in cards_list]
         
         
         

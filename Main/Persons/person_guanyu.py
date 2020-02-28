@@ -32,9 +32,10 @@ class person_guanyu(base.base):
             #[cardid, color, num]
             red_cards=[x for x in self.cards if (x[1]>=2)]  ##黑桃、梅花、红心、方片
             if red_cards:
-                res=self.playcard(red_cards, inform='发动技能武圣(请打出一张红牌或取消)？', end=list(range(len(self.room.socket_list))).remove(self.playerid) , endnum=1, \
+                res=self.playcard(red_cards, inform='发动技能武圣(请打出一张红牌或取消)？', end=list(range(len(self.room.socket_list))).remove(self.playerid) , endnum=[1], \
                               active=False, go_on=False   )
                 if res: #如果打出了一张红牌
+                    print (res)
                     card,ed=res[0][0],res[1][0]
                     card[0]=Cards.map_name_id['杀']
                     self.play_one_card(ed, card, active=True)

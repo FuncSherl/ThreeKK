@@ -14,7 +14,6 @@ import sys,json,msvcrt
 import eventlet
 import numpy as np
 import platform
-from curses.ascii import STX
 syst = platform.system()
 eventlet.monkey_patch()
 
@@ -69,19 +68,24 @@ class UI_cmd:
         for i in range(1, len(self.person_instance)):
             tx=int( self.center_x- math.cos(self.start_angle+i*angel)*r-self.person_instance[st].mlen/2 )
             ty=int( self.center_y- math.sin(self.start_angle+i*angel)*r)
-
+            #descrs[st].insert(1, 'INDEX:%d'%st)
             self.draw_panel(descrs[st], ty, tx)
             
+            self.person_instance[st].playcard_x=int( self.width/2-(self.width/2-tx)/2 )
+            self.person_instance[st].playcard_y=int( (ty+self.user_sty)/2 )
+            
             st=(st-1)%len(self.person_instance)
+        
+            
         
     def draw_me(self):
         if not self.person_instance:return
         desr=self.person_instance[self.myindex].get_describe()
         self.draw_panel(desr, self.height, self.width) #放到右下角，自动识别更改
         
-    def draw_my_cards(self):
+    def draw_my_cards(self, cards_list):
         if not self.person_instance:return
-        res=self.person_instance[self.myindex].form_all_cards()
+        res=self.person_instance[self.myindex].form_all_cards(cards_list)
         mlen=self.person_instance[self.myindex].mlen
         mhight=self.person_instance[self.myindex].mhigh
         stx=0
@@ -104,6 +108,9 @@ class UI_cmd:
         mlen=max( [len(x) for x in descs] )
         stx=int((self.width-mlen)/2)
         self.draw_panel(descs, self.playarea_y-len(cards), stx)
+        
+        self.person_instance[self.myindex].playcard_x=int( self.width/2)
+        self.person_instance[self.myindex].playcard_y=self.playarea_y-len(cards)-1
         
     def draw_link(self, sty, stx, edy, edx):
         kep_stx=stx
@@ -129,14 +136,14 @@ class UI_cmd:
             if edx>kep_stx: tep='>'
         self.pannel[sty][stx]=tep
             
-    def normal_draw_all(self):
+    def normal_draw_all(self, cards_list):
         #正常对局下的每次打印
         self.draw_clients()
         self.draw_me()
-        self.draw_my_cards()
+        self.draw_my_cards(cards_list)
         
     def sel_hero_draw(self, heroidlist):
-        desc_list=[person(y).get_hero_describe() for y in heroidlist]
+        desc_list=[person(y, 0).get_hero_describe() for y in heroidlist]
         mlist=[ max([len(x.encode('utf-8')) for x in y])  for y in desc_list]
         #gap=int(  (self.width-sum(mlist))  /  (len(heroidlist)+1) )
         
@@ -152,14 +159,15 @@ class UI_cmd:
             #print(desc_list[i])
             
             
-    def update(self, clean_pannel=True):
+    def update(self, clean_pannel=True, cards=None):
         self.clean_screen()
         if clean_pannel: self.clean_panel()
         '''
         for i in range(self.height):
             for j in range(self.width): print ("\b")
         '''
-        self.normal_draw_all()
+        if not cards and self.person_instance: self.normal_draw_all(self.person_instance[self.myindex].cards)
+        else: self.normal_draw_all(cards)
         
         #for test
         #self.draw_play_cards(person().cards)
@@ -286,6 +294,23 @@ class UI_cmd:
         
                 
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息
+    def str2playcard(self, pstr, cardsforsel, selcnt, endforsel):
+        cards=[]
+        ends=[]
+        sp=pstr.split('>')
+        if sp[0]:
+            for  i in sp[0].split(' ,.'):
+                if len(cards)<selcnt: cards.append(cardsforsel[int(i)]  )
+                
+        if len(sp)>1 and sp[1]:
+            for  i in sp[1].split(' ,.'):
+                if endforsel is None: 
+                    ends.append(int(i)) 
+                    continue
+                if int(i) in endforsel:
+                    ends.append(int(i))
+        return [cards, ends]
+    
     def common_msg_process(self, msg):
         self.myindex=msg['myid']
         if self.person_instance:
@@ -293,7 +318,7 @@ class UI_cmd:
                 if not i: continue
                 #[[heroid, health],...  ]
                 if self.person_instance[ind].heroid!=i[0]:
-                    self.person_instance[ind]=person(i[0])
+                    self.person_instance[ind]=person(i[0], ind)
                 self.person_instance[ind].health=i[1]
             for ind,i in enumerate(msg['cards']):##[ [cards, armers, shields, horses_minus, horse_plus], ... ]
                 if not i: continue
@@ -304,12 +329,24 @@ class UI_cmd:
         
         if msg and msg['reply']:
             msg['reply']=False
-            msg=json.dumps(msg)
-            self.socket.send(msg.encode('utf-8'))
+            Rooms.base.base.send_map_str(self.socket, msg)
         return True        
 
     def on_playcard(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        st=msg['start']
+        ed=msg['end']
+        cards=msg['third']
+        
+        self.update()
+        self.draw_play_cards(cards)
+        
+        for i in st:
+            for  j in ed:
+                if i!=j: self.draw_link(self.person_instance[i].playcard_y, self.person_instance[i].playcard_x,\
+                                self.person_instance[j].playcard_y, self.person_instance[j].playcard_x)
+        
+        self.update( False)
         
         return msg
         
@@ -389,7 +426,7 @@ class UI_cmd:
     def on_gameinited(self, msg):        
         if msg['cards'] and msg['heros']: 
             for ind,i in enumerate(msg['heros']):
-                self.person_instance.append(person(i[0]))
+                self.person_instance.append( person(i[0], ind) )
                 
             self.common_msg_process(msg)
         self.update()
@@ -409,11 +446,23 @@ class UI_cmd:
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         #返回的msg中third中为用户选择，forth为选择的card，
         #return False
-        self.update()
+        
+        if self.myindex not in msg['start']: 
+            print ("\r%s Selecting..."%Persons.class_list[msg['start'][0]].name, end='')
+            return
+        
+        
+        self.update(msg['forth'])
+        
         res=self.input_withtimeout(msg['third'], str)
         if res is None: 
-            res=0
-        
+            msg['third']=False
+            Rooms.base.base.send_map_str(self.socket, msg)
+            return False
+        #或者是出牌
+        cards,ends=self.str2playcard(res, msg['forth'], msg['fifth'], msg['end'])
+        msg_p=Message.form_playcard(self.myindex, msg['heros'], msg['cards'], [self.myindex], ends, cards, reply=False)  #通知所有人谁向谁出了牌
+        Rooms.base.base.send_map_str(self.socket, msg_p)
         
         return True
     

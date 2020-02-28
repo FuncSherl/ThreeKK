@@ -27,8 +27,12 @@ class card_attack(base_basic.base):
     def cal_targets(cls, startperson, card=None):
         #能指定什么目标,返回目标ids,桃需要重写
         cnt=len(startperson.room.socket_list)
+        
+        tlist=list( range(cnt ) )
+        tlist.remove(startperson.playerid)
+        
         #return 1,[startperson.playerid]  #仅自己
-        return 1,list( range(cnt ) ).remove(startperson.playerid)  #除了自己选一个
+        return 1,  tlist#除了自己选一个
         return cnt,list( range(cnt ) )  #所有人 s
     
     

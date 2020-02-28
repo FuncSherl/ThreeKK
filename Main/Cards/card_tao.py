@@ -26,10 +26,11 @@ class card_tao(base_basic.base):
     def cal_targets(cls, startperson, card=None):
         #能指定什么目标,返回目标ids,桃需要重写
         cnt=len(startperson.room.socket_list)
-        if startperson.round_status and startperson.health<startperson.blood:  return 1,[startperson.playerid]  #仅自己
-        return 0,[]
-        return 1,list( range(cnt ) ).remove(startperson.playerid)  #除了自己选一个
-        return cnt,list( range(cnt ) )  #所有人 s
+        rt=[x.playerid for x in startperson.room.heros_instance if x.health<=0]
+        if startperson.round_status and startperson.health<startperson.blood:  rt.append(startperson.playerid)  #仅自己
+        rt=list(set(rt))
+        return 1,rt
+        
     
     
     

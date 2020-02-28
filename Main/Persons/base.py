@@ -33,6 +33,7 @@ class base:
         self.cards=[] #[[], ]
         self.round_init()
         self.round_status=False
+        self.msg_queue=[]
         
         self.cards_may_play=[]
         self.cards_num_play=1
@@ -240,17 +241,19 @@ class base:
     #以下为工具函数，每个类中相同，不必重写
     def listen_distribute(self, msgwant=[]):
         self.function_table=Message.make_msg2fun(self)
+        
+        while self.msg_queue:
+            name=self.msg_queue[0]['msg_name']
+            if msgwant and name not in msgwant: self.msg_queue.pop(0)
+            else: return self.function_table[name](self.msg_queue.pop(0))
+        
         msg_list=self.room.send_recv(self.mysocket)
         
         if not msg_list: return msg_list
-        ret=False
-        for ind,msg in enumerate(msg_list):
-            if msgwant and msg['msg_name'] not in msgwant: continue
-            
-            name=msg['msg_name']
-            self.function_table[name](msg)
-            ret=True
-        return ret
+        
+        self.msg_queue.extend(msg_list)
+
+        return self.listen_distribute(msgwant)
         
     ###################################################################  每次准备出牌前的处理,如添加可选择的目标数目
     def ask_armers_init_playcard(self, card=None):
@@ -348,15 +351,17 @@ class base:
         for i in ed: 
             if not self.room.heros_instance[i].alive: return False
         
+        print (self.cards_end_may)
         if self.cards_end_may is None:#判定牌的目标合理性,None表示根据牌来定
             for i in cards:
                 tn,endids=Cards.class_list[ i[0] ].cal_targets(self)
-                tn+=self.cards_end_num
-                if len(ed)>tn:return False
+                if len(endids)==tn: continue  #这种情况下不用选择
+                tmaxn=max(tn, max(self.cards_end_num) )  #有时可以选择多个目标，比原来的要多
+                if len(ed)>tmaxn or len(ed)<=0:return False
                 for j in ed:
                     if j not in endids: return False           
         else:
-            if len(ed)>self.cards_end_num: return False
+            if len(ed) not in self.cards_end_num: return False
             for i in ed:
                 if i not in self.cards_end_may: return False
             '''
@@ -366,7 +371,7 @@ class base:
         
         return True
     
-    def playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=0, active=True, go_on=True):
+    def playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=[], active=True, go_on=True):
         #告诉所有人谁正在选牌出,其中end为None表示由玩家选择目标，目标合理性判断由牌+玩家决定；如果有list，则目标必须在end的list中 
         #active表示是否是先手方，或者是被动出牌        endnum仅参考，给出目标的上限数目
         self.cards_may_play=cardtoselect
@@ -380,7 +385,7 @@ class base:
             if not self.init_playcards(): return  False
             
         #myid, myheroid, mycards, start, end, informmsg, cardstoselect, select_cnt=1,  reply=True
-        msg=Message.form_askselect(0, 0, 0, self.playerid, self.cards_end_may, \
+        msg=Message.form_askselect(0, 0, 0, [self.playerid], self.cards_end_may, \
                                    self.cards_inform, self.cards_may_play, select_cnt=self.cards_num_play, reply=False)
         self.room.send_msg_to_all(msg, replylist=[self.playerid])
         
@@ -390,7 +395,7 @@ class base:
         
         #重要处理，很多情况下这里因该收到该消息,即用户打出一张牌
         cards=msg['third']
-        st=self.playerid #list(set(msg['start']))
+        st=[self.playerid] #list(set(msg['start']))
         ed=list(set(msg['end']   ))     
         
         if not self.judge_playcard(cards, ed): 
