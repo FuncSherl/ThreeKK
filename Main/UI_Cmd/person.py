@@ -26,6 +26,7 @@ class person(object):
         self.health=Persons.class_list[id].blood
         self.describ_hero=Persons.class_list[id].describ_skill_list
         self.cards=[]
+        self.cards_to_sel=[]
         self.armers=[]
         self.shields=[]
         self.horse_minus=[]
@@ -76,17 +77,21 @@ class person(object):
     def get_describe(self):
         return self.add_box(self.form_other_person())
         
-    @classmethod
-    def form_card(cls, card):
+    
+    def form_card(self, card):
         name=Cards.class_list[card[0]].name_pinyin
         #\033[显示方式;前景色;背景色m + 结尾部分：\033[0m
         lmin=min([len(x) for x in Config.Card_color_enum])
         col=Config.Card_color_enum[card[1]].upper()
-        return '['+name+':'+col+':'+'%d'%(card[2])+']'
+        return '['+name+':'+col+':'+'%d'%(card[2])+']'+('*' if card in self.cards_to_sel else '')
     
-    @classmethod
-    def form_all_cards(self, cards_list):
-        return [self.form_card(x) for x in cards_list]
+    
+    def form_all_cards(self):
+        for i in self.cards_to_sel: 
+            if i not in self.cards: self.cards.append(i)
+        return [self.form_card(x) for x in self.cards]
+        
+        
         
         
         

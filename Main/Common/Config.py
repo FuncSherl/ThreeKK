@@ -5,7 +5,7 @@ Created on 2020年2月12日
 @author: sherl
 '''
 Port=7999   #监听端口
-Timeout=8   #recv的超时时间 s
+Timeout=18   #recv的超时时间 s
 HeartBeat=3 #心跳时间间隔 s 
 FailerCnt=5
 BuffSize=1024*2   #recv bufsize

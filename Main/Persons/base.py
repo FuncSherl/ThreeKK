@@ -74,7 +74,7 @@ class base:
             #启动弃牌
             dropcnt=len(self.cards)-self.health
             
-            msg=Message.form_roundend_dropcard(0, 0, 0, self.playerid, dropcnt, reply=False)
+            msg=Message.form_roundend_dropcard(0, 0, 0, [self.playerid], [dropcnt], reply=False)
             self.room.send_msg_to_all(msg, replylist=[self.playerid])
                 
             if not self.listen_distribute([Message.msg_types[13]]):
@@ -371,7 +371,7 @@ class base:
         
         return True
     
-    def playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=[], active=True, go_on=True):
+    def playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=[1], active=True, go_on=True):
         #告诉所有人谁正在选牌出,其中end为None表示由玩家选择目标，目标合理性判断由牌+玩家决定；如果有list，则目标必须在end的list中 
         #active表示是否是先手方，或者是被动出牌        endnum仅参考，给出目标的上限数目
         self.cards_may_play=cardtoselect

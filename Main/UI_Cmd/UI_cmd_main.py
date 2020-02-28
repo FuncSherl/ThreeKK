@@ -32,6 +32,9 @@ class UI_cmd:
     center_y=int(  (center_x**2 + user_sty**2)/ (2*user_sty)   )
     start_angle=math.acos(center_x*1.0/center_y)
     
+    split_card_hero='>'
+    split_cards=' ,.'
+    split_heros=split_cards
     
     def __init__(self, ipstr='127.0.0.1'):
         self.ipstr=ipstr
@@ -83,16 +86,15 @@ class UI_cmd:
         desr=self.person_instance[self.myindex].get_describe()
         self.draw_panel(desr, self.height, self.width) #放到右下角，自动识别更改
         
-    def draw_my_cards(self, cards_list):
+    def draw_my_cards(self):
         if not self.person_instance:return
-        res=self.person_instance[self.myindex].form_all_cards(cards_list)
+        res=self.person_instance[self.myindex].form_all_cards()
         mlen=self.person_instance[self.myindex].mlen
         mhight=self.person_instance[self.myindex].mhigh
         stx=0
         sty=self.height-mhight-1
         
-        self.draw_panel(['*'*self.width], sty, stx)
-        
+        self.draw_panel(['*'*self.width], sty, stx)        
         sty+=2
         
         for ind,i in enumerate(res):
@@ -140,7 +142,7 @@ class UI_cmd:
         #正常对局下的每次打印
         self.draw_clients()
         self.draw_me()
-        self.draw_my_cards(cards_list)
+        self.draw_my_cards()
         
     def sel_hero_draw(self, heroidlist):
         desc_list=[person(y, 0).get_hero_describe() for y in heroidlist]
@@ -194,29 +196,36 @@ class UI_cmd:
             return res
         return None
         '''
-        inform=informmsg+'(%2d):'%(timeout)
+        def str2width(str):
+            str_b=str.encode()
+            l_m=len(str_b)-len(str)
+            return str.ljust(self.width-l_m)
+        
+        inform=str2width(informmsg+'(%2d):'%(timeout))
         start_time = time.time()
-        input = ''
+        input_str = ''
         while True:
             #print ("\b"*len(inform), end='')
             print ("\r", end='')
-            inform=informmsg+'(%2d):'%(timeout-time.time() + start_time)+input
+            inform=str2width(informmsg+'(%2d):'%(timeout-time.time() + start_time)+input_str)
             print (inform, end='')
             if msvcrt.kbhit():
                 chr =  msvcrt.getche() 
+                #print (ord(chr))
                 if ord(chr) == 13: break  #enter    
-                elif ord(chr)==27: return None  #esc 取消                
+                elif ord(chr)==27: return None  #esc 取消        
+                elif ord(chr)== 8: input_str=input_str[:-1]      #backspace  
                 elif ord(chr) >= 32: #space_char
-                    input += chr.decode()            
+                    input_str += chr.decode()            
             if  (time.time() - start_time) >timeout:  return None            
-        if len(input) <= 0: return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time))
+        if len(input_str) <= 0: return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time))
         try:
-            input=func(input)
+            input_str=func(input_str)
         except Exception as e:
             #print ('input error:'+str(e), end='')
             return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time))
         
-        return input
+        return input_str
         
                 
         
@@ -294,22 +303,27 @@ class UI_cmd:
         
                 
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息
-    def str2playcard(self, pstr, cardsforsel, selcnt, endforsel):
+    def str2playcard(self, pstr,  selcnt, endforsel=[]):
         cards=[]
         ends=[]
-        sp=pstr.split('>')
-        if sp[0]:
-            for  i in sp[0].split(' ,.'):
-                if len(cards)<selcnt: cards.append(cardsforsel[int(i)]  )
-                
-        if len(sp)>1 and sp[1]:
-            for  i in sp[1].split(' ,.'):
-                if endforsel is None: 
-                    ends.append(int(i)) 
-                    continue
-                if int(i) in endforsel:
-                    ends.append(int(i))
-        return [cards, ends]
+        try:
+            sp=pstr.split(self.split_card_hero)
+            if sp[0]:
+                for  i in sp[0].split(self.split_cards):
+                    if len(cards)<selcnt and int(i)<len(self.person_instance[self.myindex].cards) and int(i)>=0: 
+                        cards.append(self.person_instance[self.myindex].cards[int(i)]  )
+                    
+            if len(sp)>1 and sp[1]:
+                for  i in sp[1].split(self.split_heros):
+                    if endforsel is None and int(i)<self.person_instance and int(i)>0: 
+                        ends.append(int(i)) 
+                        continue
+                    if int(i) in endforsel:
+                        ends.append(int(i))
+        except Exception as e:
+            print ('str2playcard error:', str(e))
+        finally:
+            return [cards, ends]
     
     def common_msg_process(self, msg):
         self.myindex=msg['myid']
@@ -323,6 +337,7 @@ class UI_cmd:
             for ind,i in enumerate(msg['cards']):##[ [cards, armers, shields, horses_minus, horse_plus], ... ]
                 if not i: continue
                 self.person_instance[ind].set_all_cards(i)
+        self.update(clean_pannel=True)
     
     def on_heartbeat(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
@@ -439,6 +454,18 @@ class UI_cmd:
         self.cards=[self.cards[x]  for x in range(len(self.cards)) if (x not in msg['third'])]
         self.room.drop_cards(dropedcards)
         '''
+        st=msg['start'][0]
+        dcnt=msg['third'][0]
+        if st!=self.myindex: 
+            print ("\r%s Droping %2d Cards..."%(Persons.class_list[st].name, dcnt), end='')
+            return True        
+        res=self.input_withtimeout('回合结束，请弃%2d张牌:'%dcnt, str)
+        cards,ends=self.str2playcard(res, dcnt)
+        
+        msg['third']=cards
+        msg['reply']=False
+        Rooms.base.base.send_map_str(self.socket, msg)
+        
         return True
         
     
@@ -451,8 +478,8 @@ class UI_cmd:
             print ("\r%s Selecting..."%Persons.class_list[msg['start'][0]].name, end='')
             return
         
-        
-        self.update(msg['forth'])
+        self.person_instance[self.myindex].cards_to_sel=msg['forth']
+        self.update()
         
         res=self.input_withtimeout(msg['third'], str)
         if res is None: 
@@ -460,7 +487,7 @@ class UI_cmd:
             Rooms.base.base.send_map_str(self.socket, msg)
             return False
         #或者是出牌
-        cards,ends=self.str2playcard(res, msg['forth'], msg['fifth'], msg['end'])
+        cards,ends=self.str2playcard(res, msg['fifth'], msg['end'])
         msg_p=Message.form_playcard(self.myindex, msg['heros'], msg['cards'], [self.myindex], ends, cards, reply=False)  #通知所有人谁向谁出了牌
         Rooms.base.base.send_map_str(self.socket, msg_p)
         
