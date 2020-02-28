@@ -78,8 +78,7 @@ class base:
                 
             if not self.listen_distribute([Message.msg_types[13]]):
                 dropedcards=self.cards[:dropcnt]
-                self.cards=self.cards[dropcnt:]
-                self.room.drop_cards(dropedcards)     
+                self.dropcard(dropedcards)    
         self.round_status=False           
         return True
                   
@@ -507,10 +506,9 @@ class base:
         return False
     
     def on_roundend_dropcard(self, msg):
-        dropedcards=[self.cards[x]  for x in msg['third']]
-        self.cards=[self.cards[x]  for x in range(len(self.cards)) if (x not in msg['third'])]
-        self.room.drop_cards(dropedcards)
-        
+        dropedcards=msg['third']
+        self.dropcard(dropedcards)
+    
         return True
         
     

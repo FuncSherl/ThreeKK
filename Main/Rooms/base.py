@@ -139,7 +139,13 @@ class base:
             
             res=self.send_map_str(i, msg)
             
-        
+    def send_heartbeat_to_all(self, reply=False):
+        msg=Message.form_heartbeat(reply=reply)
+        self.send_msg_to_all(msg)
+        if reply:
+            ret=self.send_recv_onebyone(self.socket_list, [Message.msg_types[0]])
+            for ind,i in enumerate(ret):
+                if not ret: print ('Player %2d droped'%ind)
             
     #游戏中用到的一些事件
     def on_gamestart(self):  #1

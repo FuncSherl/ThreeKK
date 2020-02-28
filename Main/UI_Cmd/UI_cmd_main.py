@@ -14,13 +14,14 @@ import sys,json,msvcrt
 import eventlet
 import numpy as np
 import platform
+from curses.ascii import STX
 syst = platform.system()
 eventlet.monkey_patch()
 
 
 class UI_cmd:        
     height=30-1  #cmd为30行
-    width=118 #120列个字符
+    width=120-2 #120列个字符
     
 
     user_stx=int(width/4)
@@ -104,6 +105,29 @@ class UI_cmd:
         stx=int((self.width-mlen)/2)
         self.draw_panel(descs, self.playarea_y-len(cards), stx)
         
+    def draw_link(self, sty, stx, edy, edx):
+        kep_stx=stx
+        kep_sty=sty
+        inch_x=1 if edx>stx else -1
+        inch_y=1 if edy>sty else -1
+        while not (stx==edx and sty==edy):
+            if abs(edy-sty)>abs(edx-stx):
+                self.pannel[sty][stx]='|'
+                sty+=inch_y
+            elif abs(edy-sty)<abs(edx-stx):
+                self.pannel[sty][stx]='-'
+                stx+=inch_x
+            else:
+                self.pannel[sty][stx]='/'
+                if (edy-sty)*(edx-stx)>=0: self.pannel[sty][stx]='\\'
+        tep=None
+        if abs(edy-kep_sty)>abs(edx-kep_stx): 
+            tep='^'
+            if edy>kep_sty:tep='v'
+        else:
+            tep='<'
+            if edx>kep_stx: tep='>'
+        self.pannel[sty][stx]=tep
             
     def normal_draw_all(self):
         #正常对局下的每次打印
@@ -114,7 +138,7 @@ class UI_cmd:
     def sel_hero_draw(self, heroidlist):
         desc_list=[person(y).get_hero_describe() for y in heroidlist]
         mlist=[ max([len(x.encode('utf-8')) for x in y])  for y in desc_list]
-        gap=int(  (self.width-sum(mlist))  /  (len(heroidlist)+1) )
+        #gap=int(  (self.width-sum(mlist))  /  (len(heroidlist)+1) )
         
         stx=0
         sty=0
@@ -128,8 +152,9 @@ class UI_cmd:
             #print(desc_list[i])
             
             
-    def update(self):
+    def update(self, clean_pannel=True):
         self.clean_screen()
+        if clean_pannel: self.clean_panel()
         '''
         for i in range(self.height):
             for j in range(self.width): print ("\b")
@@ -141,9 +166,11 @@ class UI_cmd:
         
         for ind,i in enumerate(self.pannel[:self.height]): 
             #i[:2]='% 2d'%ind
-            ti=''.join(i)
-            spare=ti[:self.width]#len(ti.encode('utf-8'))-self.width-1
-            print (spare)
+            ti=''.join(i).encode('utf-8')
+            ti=ti[:self.width].decode('utf-8', errors='ignore')
+                        
+            #len(ti.encode('utf-8'))-self.width-1
+            print (ti)
             
         
     def input_withtimeout(self, informmsg='test:', func=int, timeout=Config.Timeout):
@@ -344,7 +371,7 @@ class UI_cmd:
             print ('select heros ERROR!')
             return False
         self.sel_hero_draw(hero_sel)
-        self.update()
+        self.update( False)
         res=self.input_withtimeout('请选择人物序号(default:0):', int)
         
         if res is None: 
@@ -359,8 +386,7 @@ class UI_cmd:
         msg['heros']=[heroid]
         return base.base.send_map_str(self.socket, msg)
     
-    def on_gameinited(self, msg):
-        
+    def on_gameinited(self, msg):        
         if msg['cards'] and msg['heros']: 
             for ind,i in enumerate(msg['heros']):
                 self.person_instance.append(person(i[0]))
