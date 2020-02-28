@@ -10,15 +10,17 @@ from Rooms import base
 from Common import Config,Message
 from UI_Cmd.person import person 
 import socket ,time
-import sys,json
+import sys,json,msvcrt
+import eventlet
 import numpy as np
 import platform
 syst = platform.system()
+eventlet.monkey_patch()
 
 
 class UI_cmd:        
     height=30-1  #cmd为30行
-    width=120 #120列个字符
+    width=118 #120列个字符
     
 
     user_stx=int(width/4)
@@ -56,7 +58,8 @@ class UI_cmd:
         descrs=[x.get_describe() for x in self.person_instance]  #这里必须先获取描述信息，目的是更新各个person对象中的mlen变量
         if not descrs: return
         #print (descrs)
-        mlen=max( [x.mlen for x in self.person_instance if x.playerid!=self.myindex] )
+        
+        mlen=max( [x.mlen for ind,x in enumerate(self.person_instance)] )
         #r=int ((self.width-mlen)/2 )
         r=self.center_y
         angel=(math.pi-2*self.start_angle)/( len(self.person_instance))
@@ -127,17 +130,60 @@ class UI_cmd:
             
     def update(self):
         self.clean_screen()
+        '''
+        for i in range(self.height):
+            for j in range(self.width): print ("\b")
+        '''
         self.normal_draw_all()
         
         #for test
         #self.draw_play_cards(person().cards)
         
-        for ind,i in enumerate(self.pannel[:self.height-1]): 
+        for ind,i in enumerate(self.pannel[:self.height]): 
             #i[:2]='% 2d'%ind
-            print (''.join(i)[: int( self.width-1 )])
+            ti=''.join(i)
+            spare=ti[:self.width]#len(ti.encode('utf-8'))-self.width-1
+            print (spare)
             
         
+    def input_withtimeout(self, informmsg='test:', func=int, timeout=Config.Timeout):
+        '''
+        with eventlet.Timeout(Config.Timeout,False):
+            res=input(informmsg)
+            if not res: return None
+            try:
+                res=func(res)
+            except Exception as e:
+                print ('input error:', str(e))
+                return None
+            return res
+        return None
+        '''
+        inform=informmsg+'(%2d):'%(timeout)
+        start_time = time.time()
+        input = ''
+        while True:
+            #print ("\b"*len(inform), end='')
+            print ("\r", end='')
+            inform=informmsg+'(%2d):'%(timeout-time.time() + start_time)+input
+            print (inform, end='')
+            if msvcrt.kbhit():
+                chr =  msvcrt.getche() 
+                if ord(chr) == 13: break  #enter    
+                elif ord(chr)==27: return None  #esc 取消                
+                elif ord(chr) >= 32: #space_char
+                    input += chr.decode()            
+            if  (time.time() - start_time) >timeout:  return None            
+        if len(input) <= 0: return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time))
+        try:
+            input=func(input)
+        except Exception as e:
+            #print ('input error:'+str(e), end='')
+            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time))
         
+        return input
+        
+                
         
     
     def main_loop(self):
@@ -299,21 +345,29 @@ class UI_cmd:
             return False
         self.sel_hero_draw(hero_sel)
         self.update()
-        res=input('请选择人物序号(default:0):')
-        heroid=hero_sel[0]
-        if res and int(res)>=0 and int(res)<len(hero_sel):
-            heroid=hero_sel[int(res)]
+        res=self.input_withtimeout('请选择人物序号(default:0):', int)
+        
+        if res is None: 
+            print('选择超时,使用默认')
+            res=0
+        heroid=hero_sel[res]
+        
         if not msg['reply']: 
             print ('ERROR:while select hero')
             return
         #做个消息发回去
         msg['heros']=[heroid]
-        base.base.send_map_str(self.socket, msg)
+        return base.base.send_map_str(self.socket, msg)
     
     def on_gameinited(self, msg):
-        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
-        return False
+        if msg['cards'] and msg['heros']: 
+            for ind,i in enumerate(msg['heros']):
+                self.person_instance.append(person(i[0]))
+                
+            self.common_msg_process(msg)
+        self.update()
+        return True
     
     def on_roundend_dropcard(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
@@ -329,7 +383,11 @@ class UI_cmd:
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         #返回的msg中third中为用户选择，forth为选择的card，
         #return False
-        res=input(msg['third'])
+        self.update()
+        res=self.input_withtimeout(msg['third'], str)
+        if res is None: 
+            res=0
+        
         
         return True
     
