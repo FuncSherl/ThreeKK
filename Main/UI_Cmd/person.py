@@ -59,7 +59,7 @@ class person(object):
         return info_list
     
     def get_hero_describe(self):
-        ret= ['HERO:'+self.name_chinese+'  BLOOD:' +'*'*self.health]
+        ret= ['人物:'+self.name_chinese+'  血量:' +'*'*self.health]
         mlen=max([self.get_show_len(x) for x in ret])
         #mlen=int(mlen/2)  #中文与英文显示对应
         

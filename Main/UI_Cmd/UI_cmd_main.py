@@ -41,6 +41,7 @@ class UI_cmd:
         self.ipstr=ipstr
         self.socket=self.connect_server(self.ipstr)
         self.msg_queue=[]
+        self.listen_fail_cnt=0
 
         self.pannel=[]
         for i in range(self.height):
@@ -154,7 +155,7 @@ class UI_cmd:
         
     def sel_hero_draw(self, heroidlist):
         desc_list=[person(y, 0).get_hero_describe() for y in heroidlist]
-        mlist=[ max([len(x.encode('utf-8')) for x in y])  for y in desc_list]
+        mlist=[ max([person.get_show_len(x) for x in y])  for y in desc_list]
         #gap=int(  (self.width-sum(mlist))  /  (len(heroidlist)+1) )
         
         stx=0
@@ -172,10 +173,7 @@ class UI_cmd:
     def update(self, clean_pannel=True, cards=None):
         self.clean_screen()
         if clean_pannel: self.clean_panel()
-        '''
-        for i in range(self.height):
-            for j in range(self.width): print ("\b")
-        '''
+
         if not cards and self.person_instance: self.normal_draw_all(self.person_instance[self.myindex].cards)
         else: self.normal_draw_all(cards)
         
@@ -242,7 +240,12 @@ class UI_cmd:
     
     def main_loop(self):
         while self.game_status :
-            if not self.listen_distribute():time.sleep(0.5)
+            if not self.listen_distribute():
+                self.listen_fail_cnt+=1
+                if self.listen_fail_cnt>Config.FailerCnt: 
+                    self.game_status=False
+                time.sleep(0.5)
+            else: self.listen_fail_cnt=0
         print ('Room Destroyed!')
     
     def panel_set_at(self, char_str, stx, sty):
@@ -398,23 +401,23 @@ class UI_cmd:
     def on_judgement(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
-        return False
+        return True
     
     def on_getcard(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
-        return False
+        return True
     
     def on_roundstart(self, msg=None):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
         
-        return False
+        return True
         
     def on_roundend(self, msg=None):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
-        return False            
+        return True            
         
     def on_gamestart(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
@@ -431,12 +434,12 @@ class UI_cmd:
     def on_skillstart(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
-        return False
+        return True
     
     def on_equipstart(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
-        return False
+        return True
     
     def on_inform_beforegame(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
@@ -493,9 +496,9 @@ class UI_cmd:
         
         msg['third']=cards
         msg['reply']=False
-        Rooms.base.base.send_map_str(self.socket, msg)
         
-        return True
+        
+        return Rooms.base.base.send_map_str(self.socket, msg)
         
     
     def on_askselect(self, msg):
@@ -518,9 +521,9 @@ class UI_cmd:
         #或者是出牌
         cards,ends=self.str2playcard(res, msg['fifth'], msg['end'])
         msg_p=Message.form_playcard(self.myindex, msg['heros'], msg['cards'], [self.myindex], ends, cards, reply=False)  #通知所有人谁向谁出了牌
-        Rooms.base.base.send_map_str(self.socket, msg_p)
         
-        return True
+        
+        return Rooms.base.base.send_map_str(self.socket, msg_p)
     
     
     
