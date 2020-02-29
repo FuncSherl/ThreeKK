@@ -368,7 +368,7 @@ class UI_cmd:
                 if self.person_instance[ind].heroid!=i[0]:
                     self.person_instance[ind]=person(i[0], ind)
                 self.person_instance[ind].health=i[1]
-            for ind,i in enumerate(msg['cards']):##[ [cards, armers, shields, horses_minus, horse_plus], ... ]
+            for ind,i in enumerate(msg['cards']):##[ [cards, armers, shields, horses_minus, horse_plus, delayedskill], ... ]
                 if not i: continue
                 self.person_instance[ind].set_all_cards(i)
         self.update(clean_pannel=True)
