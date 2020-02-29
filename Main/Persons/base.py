@@ -29,6 +29,7 @@ class base:
         self.mysocket=self.room.socket_list[pid]    #记录一下本实例中的socket
         
         self.alive=True
+        self.online=True
         self.health=self.blood
         self.cards=[] #[[], ]
         self.round_init()

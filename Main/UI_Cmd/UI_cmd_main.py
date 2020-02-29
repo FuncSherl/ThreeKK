@@ -125,6 +125,7 @@ class UI_cmd:
         inch_x=1 if edx>stx else -1
         inch_y=1 if edy>sty else -1
         while not (stx==edx and sty==edy):
+            #print (stx,sty, edx, edy)
             if abs(edy-sty)>abs(edx-stx):
                 self.panel_set_at('|', stx, sty)
                 #self.pannel[sty][stx]=ord(b'|')
@@ -139,6 +140,8 @@ class UI_cmd:
                 if (edy-sty)*(edx-stx)>=0: 
                     self.panel_set_at('\\', stx, sty)
                     #self.pannel[sty][stx]=ord(b'\\')
+                stx+=inch_x
+                sty+=inch_y
         tep=None
         if abs(edy-kep_sty)>abs(edx-kep_stx): 
             tep='^'
@@ -322,7 +325,7 @@ class UI_cmd:
         self.function_table=Message.make_msg2fun(self)
         
         while self.msg_queue:
-            print (self.msg_queue)
+            #print (self.msg_queue)
             name=self.msg_queue[0]['msg_name']
             if msgwant and name not in msgwant: self.msg_queue.pop(0)
             else: return self.function_table[name](self.msg_queue.pop(0))
@@ -378,24 +381,27 @@ class UI_cmd:
         
         if msg and msg['reply']:
             msg['reply']=False
-            Rooms.base.base.send_map_str(self.socket, msg)
-        return True        
+            
+        return   Rooms.base.base.send_map_str(self.socket, msg)
 
     def on_playcard(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         st=msg['start']
         ed=msg['end']
         cards=msg['third']
-        
-        self.update()
+
         self.draw_play_cards(cards)
         
         for i in st:
             for  j in ed:
+                print ("\r%s对%s使用了:%s"%(  (self.person_instance[i].name if i!=self.myindex else '你'), (self.person_instance[j].name if j!=self.myindex else '你'),\
+                                        ','.join([Cards.class_list[x[0]].name for x in cards  ])  ), end='')
                 if i!=j: self.draw_link(self.person_instance[i].playcard_y, self.person_instance[i].playcard_x,\
                                 self.person_instance[j].playcard_y, self.person_instance[j].playcard_x)
         
         self.update( False)
+        
+        print (self.pannel)
         
         return msg
         
@@ -407,6 +413,16 @@ class UI_cmd:
     
     def on_getcard(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        
+        st=msg['start']
+        ed=msg['end']
+        cards=msg['third']
+        cards=[] if not cards else cards
+        
+        for j in ed:
+            print ("\r%s从%s摸了%d张牌.."%(  (self.person_instance[j].name if j!=self.myindex else '你'), \
+                                        ('牌堆中' if not st else ('你' if st[0]==self.myindex else self.person_instance[st[0]].name)),\
+                                        len(cards)  ), end='')
         
         return True
     
@@ -491,14 +507,15 @@ class UI_cmd:
         st=msg['start'][0]
         dcnt=msg['third'][0]
         if st!=self.myindex: 
-            print ("\r%s Droping %2d Cards..."%(Persons.class_list[st].name, dcnt), end='')
+            print ("\r%s Droping %2d Cards..."%(self.person_instance[st].name, dcnt), end='')
             return True        
-        res=self.input_withtimeout('回合结束，请弃%2d张牌:'%dcnt, str)
+        res=self.input_withtimeout('回合结束，请弃%d张牌:'%dcnt, str)
         cards,ends=self.str2playcard(res, dcnt)
         
+        msg['start']=[self.myindex]
+        msg['end']=None
         msg['third']=cards
-        msg['reply']=False
-        
+        msg['reply']=False        
         
         return Rooms.base.base.send_map_str(self.socket, msg)
         
@@ -509,7 +526,7 @@ class UI_cmd:
         #return False
         
         if self.myindex not in msg['start']: 
-            print ("\r%s Selecting..."%Persons.class_list[msg['start'][0]].name, end='')
+            print ("\r%s Selecting..."%self.person_instance[msg['start'][0]].name, end='')
             return
         
         self.person_instance[self.myindex].cards_to_sel=msg['forth']

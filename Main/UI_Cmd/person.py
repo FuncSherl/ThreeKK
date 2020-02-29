@@ -21,7 +21,7 @@ class person(object):
         '''
         self.heroid=id
         self.myindex=myindex
-        self.name=Persons.class_list[id].name_pinyin
+        self.name=Persons.class_list[id].name
         self.name_chinese=Persons.class_list[id].name
         self.health=Persons.class_list[id].blood
         self.describ_hero=Persons.class_list[id].describ_skill_list

@@ -5,7 +5,7 @@ Created on 2020年2月12日
 @author: sherl
 '''
 Port=7999   #监听端口
-Timeout=18   #recv的超时时间 s
+Timeout=20   #recv的超时时间 s
 HeartBeat=3 #心跳时间间隔 s 
 FailerCnt=3 #出牌失败cnt
 

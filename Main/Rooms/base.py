@@ -206,7 +206,7 @@ class base:
             for inj,j in enumerate(cards):  
                 if j and ind!=inj: j[0]=[None]*len(j[0])
             
-            msg=Message.form_getcard(ind, heros, cards, [end],[start], tep, reply=( (ind==end) and reply))
+            msg=Message.form_getcard(ind, heros, cards, [end],([start] if start else None), tep, reply=( (ind==end) and reply))
             self.send_map_str(i, msg)
         
         self.heros_instance[end].addcard(cards_tep)
@@ -251,7 +251,7 @@ class base:
             if self.heros_instance[st].alive: self.roundstart(st)
             if self.heros_instance[st].alive: self.playcardstart(st)
             if self.heros_instance[st].alive: self.roundend(st)
-            
+            print ('next player round')
             self.gamestatus_judge()
             st+=1
             st%=len(self.socket_list)
