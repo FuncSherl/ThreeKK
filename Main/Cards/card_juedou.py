@@ -37,7 +37,21 @@ class card_juedou(base_skill.base):
 
 
 
-#############################################################    
+############################################################# 
+    @classmethod
+    def on_be_playedto(cls, person_start, person_end, card=None):
+        #返回是否命中
+        cnt=len(person_start.room.socket_list)
+        tid=(person_start.playerid+1)%cnt
+        
+        while tid!=person_start.playerid:
+            #on_ask_response(cls, person_start, person_end ,selectcnt=1, active=False, go_on=False, cards_sel=None, againstnames=None)
+            tep=cls.on_ask_response(person_start, person_start.room.heros_instance[tid], \
+                                    active=False, go_on=True, cards_sel=cls.against_names[:1])
+            if tep: return False
+            tid=(tid+1)%cnt
+        
+        return True   
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
@@ -47,9 +61,9 @@ class card_juedou(base_skill.base):
         damage=cls.damage+person_start.round_additional_damage_skill+person_start.next_additional_damage_skill
         person_start.next_additional_damage_skill=0  #去掉buff
         
-        person_end.drophealth(person_start, damage, card)
+        return person_end.drophealth(person_start, damage, card)
         
-        return True
+        
         
         
 

@@ -90,7 +90,7 @@ class base:
         while self.playcard(self.activecards()):#出牌超时，出牌阶段结束
             #新一轮出牌,每次循环都是代表一张牌已经处理完了，比如决斗相互出牌处理完了，这里等待出一张新牌
             #这样则必须在下次循环前将该牌的相关处理完
-            pass
+            if not self.room.gamestatus_judge(): break
     
     def init_playcards(self, card=None):  #可以进行判断最后一张手牌等操作
         if not  self.ask_armers_init_playcard(card): return False
@@ -110,7 +110,7 @@ class base:
         
         return True
     
-    def after_playcard(self,endperson, card, hit=False):   #出牌后的装备技能判断，对
+    def after_playcard(self,endperson, card, hit=False):   #出牌后的装备技能判断，对  hit=True表示命中了
         if not self.ask_shield_after_playcard(endperson, card, hit): return False
         if not self.ask_armer_after_playcard(endperson, card, hit): return False
         #被chupai时的技能
@@ -118,19 +118,20 @@ class base:
         return True
     
     def play_one_card(self, endperson, card, active):
-        #return True: normal  False: break
+        #return True: normal本次出牌起到了效果      False: 本次出牌无效
         if self.before_playcards(endperson, card): #只有出牌方同意
             if not endperson.on_be_playcard(self, card):  #被出牌方才能进行盾牌的格挡判断 
                 return True   
         #这后面的处理就不要考虑装备效果了， 在牌各自的处理中只处理自己的事
         tesu=Cards.class_list[ card[0] ].on_be_playedto(self, endperson, card)
         #返回是否命中  tesu=True 命中        
+        #if tesu: Cards.class_list[ card[0] ].on_hit_player(self, endperson, card)
                     
-        if active:#如果未命中，可以发动一些装备
+        if active:#可以发动一些装备
             if not self.after_playcard(endperson, card, tesu): return False
         
-        if tesu: return False  #命中一次可以了
-        return True
+        if tesu: return Cards.class_list[ card[0] ].on_hit_player(self, endperson, card)  #命中一次可以了
+        return False
     
     ######################################################################################新装备来到处理 
     def add_armer(self, card):
@@ -189,7 +190,8 @@ class base:
                 self.ask_for_save()
             #后面如果还血量不够，就死亡
             if self.health<=0:
-                if not self.ondeath(): return damage
+                #return 继续游戏？
+                if not self.ondeath(): return False
             
             if person_start.after_dodamage(self, damage, card):  #伤害来源允许才能发动掉血技能
                 self.after_damaged(person_start, damage, card)  #发动掉血技能
@@ -197,8 +199,8 @@ class base:
     #A.before_dodamage->self.before_damaged->drop health->A.after_dodamage->self.after_damaged
     def before_dodamage(self, endperson, damage, card):
         #
-        damage= self.ask_armer_before_dodamage(self, endperson, damage, card)
-        damage= self.ask_shield_before_dodamage(self, endperson, damage, card)
+        damage= self.ask_armer_before_dodamage( endperson, damage, card)
+        damage= self.ask_shield_before_dodamage( endperson, damage, card)
         return max(0, damage)
     
     def after_dodamage(self, person_end, damage, card):
@@ -221,10 +223,11 @@ class base:
     
     ###################################################################    
     def ondeath(self):
+        #return 继续游戏？ 
         self.alive=False
         for i in self.all_the_cards_holders():
             self.room.drop_cards(i)
-    
+        return self.room.gamestatus_judge()
     
     ####################################################################
     def activecards(self):
@@ -414,9 +417,13 @@ class base:
         
         #将控制权交给该牌
         if go_on:
-            for k in ed:
+            if ed:
+                for k in ed:
+                    for i in cards: 
+                        if self.play_one_card(self.room.heros_instance[k], i, active): break
+            else:
                 for i in cards: 
-                    if not self.play_one_card(self.room.heros_instance[k], i, active): break
+                    if self.play_one_card(ed, i, active): break
                     '''
                     if self.before_playcards(self.room.heros_instance[k], i): #只有出牌方同意
                         if not self.room.heros_instance[k].on_be_playcard(self, i):  #被出牌方才能进行盾牌的格挡判断 

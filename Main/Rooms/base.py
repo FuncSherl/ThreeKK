@@ -237,10 +237,12 @@ class base:
         
         
     def gamestatus_judge(self):
+        #return 继续游戏？
         tep=[self.campid[x] for x in range(len(self.heros_instance)) if (self.heros_instance[x].alive)]
         if max(tep)==min(tep):
             self.game_status=False
-    
+            return False
+        return True
     
     
     
@@ -253,11 +255,11 @@ class base:
         st=random.randint(0, len(self.socket_list)-1)
         while self.game_status:
             print ('player:',st,'->',self.heros_instance[st].name,' round start!')
-            if self.heros_instance[st].alive: self.roundstart(st)
-            if self.heros_instance[st].alive: self.playcardstart(st)
-            if self.heros_instance[st].alive: self.roundend(st)
+            if self.heros_instance[st].alive and self.game_status: self.roundstart(st)
+            if self.heros_instance[st].alive and self.game_status: self.playcardstart(st)
+            if self.heros_instance[st].alive and self.game_status: self.roundend(st)
             print ('next player round')
-            self.gamestatus_judge()
+            if not self.gamestatus_judge(): break
             st+=1
             st%=len(self.socket_list)
             

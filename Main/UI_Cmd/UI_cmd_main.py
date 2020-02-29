@@ -347,6 +347,7 @@ class UI_cmd:
         ends=[]
         try:
             sp=pstr.split(self.split_card_hero)
+            print (sp)#DEBUG
             if sp[0]:
                 for  i in sp[0].split(self.split_cards):
                     if len(cards)<selcnt and int(i)<len(self.person_instance[self.myindex].cards) and int(i)>=0: 
@@ -354,7 +355,9 @@ class UI_cmd:
                     
             if len(sp)>1 and sp[1]:
                 for  i in sp[1].split(self.split_heros):
-                    if endforsel is None and int(i)<self.person_instance and int(i)>=0: 
+                    if not i : continue
+                    
+                    if endforsel is None and int(i)<len(self.person_instance) and int(i)>=0: 
                         ends.append(int(i)) 
                         continue
                     if int(i) in endforsel:
@@ -431,23 +434,23 @@ class UI_cmd:
     def on_roundstart(self, msg=None):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
-        
+        print ("\r%s回合开始..."% self.person_instance[msg['start']].name , end='')
         return True
         
     def on_roundend(self, msg=None):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
-        
+        print ("\r本回合结束...", end='')
         return True            
         
     def on_gamestart(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
-        print ('Game Start!')
+        print ("\rGame Start!", end='')
         return True
     
     def on_gameend(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
-        print ('Game End!')
+        print ("\rGame End!", end='')
         self.game_status=False
         return True
     
@@ -464,7 +467,7 @@ class UI_cmd:
     def on_inform_beforegame(self, msg):
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
-        print (msg['third'])
+        print ("\r"+msg['third'], end='')
         return True
     
     def on_pickhero(self, msg):
@@ -472,19 +475,19 @@ class UI_cmd:
         
         hero_sel=msg['heros']
         if not hero_sel: 
-            print ('select heros ERROR!')
+            print ("Select Heros ERROR!", end='')
             return False
         self.sel_hero_draw(hero_sel)
         self.update( False)
         res=self.input_withtimeout('请选择人物序号(default:0):', int)
         
         if res is None: 
-            print('选择超时,使用默认')
+            print("\r选择超时,使用默认", end='')
             res=0
         heroid=hero_sel[res]
         
         if not msg['reply']: 
-            print ('ERROR:while select hero')
+            print ("\rERROR:while select hero", end='')
             return
         #做个消息发回去
         msg['heros']=[heroid]
