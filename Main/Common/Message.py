@@ -68,7 +68,7 @@ def form_roundend_dropcard(myid, myheroid, mycards, end, dropcnt, reply=True):#å
     return form_msg(msg_types[13], myid=myid, myhero=myheroid, mycards=mycards, \
                     start=end ,end=end, third=dropcnt, reply=reply)
 
-def form_askselect(myid, myheroid, mycards, start, end, informmsg, cardstoselect, select_cnt=1,reply=True):
+def form_askselect(myid, myheroid, mycards, start, end, informmsg, cardstoselect, select_cnt=1,reply=False):
     return form_msg(msg_types[14], myid=myid, myhero=myheroid, mycards=mycards, \
                     start=start ,end=end, third=informmsg,forth=cardstoselect, fifth=select_cnt, reply=reply)
     

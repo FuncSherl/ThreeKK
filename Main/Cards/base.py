@@ -63,15 +63,16 @@ class base:
         return True
         
     @classmethod
-    def on_ask_response(cls, person_start, person_end ,selectcnt=1, active=False, go_on=False, cards_sel=against_names):
+    def on_ask_response(cls, person_start, person_end ,selectcnt=1, active=False, go_on=False, cards_sel=None):
         #一个人对另一个人出了该牌，由该牌选择如何应对，注意这里的person都是实例
+        if cards_sel is None: cards_sel=cls.against_names
         cards_to_play=[]
         for i in person_end.cards:
             if Cards.class_list[ i[0] ].name in cards_sel:
                 cards_to_play.append(i)
         #能出的牌都已经准备好了
         #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=0, active=True):
-        tep= person_end.playcard(cards_to_play, selectcnt=selectcnt, inform='%s对您使用了%s，请使用 %s'%(person_start.name, cls.name, '或'.join(cls.against_names)),\
+        tep= person_end.playcard(cards_to_play, selectcnt=selectcnt, inform='%s对您使用了%s，请使用 %s:'%(person_start.name, cls.name, '或'.join(cls.against_names)),\
                              end=[], endnum=0, active=active, go_on=go_on)
         return tep
         

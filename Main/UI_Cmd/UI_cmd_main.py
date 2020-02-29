@@ -306,7 +306,7 @@ class UI_cmd:
             tmsg=c_sock.recv(Config.BuffSize)
             
             if not tmsg: return None
-            
+            print ('recv:',tmsg)  #DEBUG
         except  socket.timeout:
             print ("\rERROR:detected timeout", end='')
             return None
@@ -341,6 +341,8 @@ class UI_cmd:
                 
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息
     def str2playcard(self, pstr,  selcnt, endforsel=[]):
+        #selcnt选几张牌  endforsel：可选的end
+        
         cards=[]
         ends=[]
         try:
@@ -352,7 +354,7 @@ class UI_cmd:
                     
             if len(sp)>1 and sp[1]:
                 for  i in sp[1].split(self.split_heros):
-                    if endforsel is None and int(i)<self.person_instance and int(i)>0: 
+                    if endforsel is None and int(i)<self.person_instance and int(i)>=0: 
                         ends.append(int(i)) 
                         continue
                     if int(i) in endforsel:
@@ -527,7 +529,7 @@ class UI_cmd:
         
         if self.myindex not in msg['start']: 
             print ("\r%s Selecting..."%self.person_instance[msg['start'][0]].name, end='')
-            return
+            return True
         
         self.person_instance[self.myindex].cards_to_sel=msg['forth']
         self.update()

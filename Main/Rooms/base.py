@@ -79,7 +79,7 @@ class base:
             tmsg=c_sock.recv(Config.BuffSize)
             
             if not tmsg: return None
-            print ('recv:',tmsg)
+            print ('recv:',tmsg)  #DEBUG
         except  socket.timeout:
             print ('ERROR:detected timeout')
             return None
@@ -98,6 +98,7 @@ class base:
         strm+=Config.Message_tail
         try:
             res=socket.send(strm.encode('utf-8'))
+            print ('send:',strm) #DEBUG
         except Exception as e:
             print ('send error:', str(e))
             return None
@@ -110,6 +111,7 @@ class base:
         strm+=Config.Message_tail
         try:
             res=socket.send(strm.encode('utf-8'))
+            print ('send:',strm) #DEBUG
         except Exception as e:
             print ('send error:', str(e))
             return None
@@ -128,14 +130,16 @@ class base:
         return ret
     
     def send_msg_to_all(self, msg, replylist=[]):
+        origin_reply=msg['reply']   #使用这个保存原来消息中的reply，如果改消息为全部回答的，只要msg中reply=True就行，不用填充replylist
         for ind,i in enumerate(self.socket_list):
             msg['myid']=ind  #第几个玩家
             msg['heros']=  [[self.heros_list[x], self.heros_instance[x].health if self.heros_instance[x] else None]  for x in range(len(self.heros_list))] #
             msg['cards']=[x.all_the_cards_holders() if x else None   for x in self.heros_instance]
             for inj,j in enumerate(msg['cards']):  
                 if j and ind!=inj: j[0]=[None]*len(j[0])
-                        
-            if ind in replylist: msg['reply']=True
+            
+            #print ((ind in replylist),  msg['reply'])   #DEBUG            
+            msg['reply']=(ind in replylist) or origin_reply
             
             res=self.send_map_str(i, msg)
             
@@ -248,6 +252,7 @@ class base:
         
         st=random.randint(0, len(self.socket_list)-1)
         while self.game_status:
+            print ('player:',st,'->',self.heros_instance[st].name,' round start!')
             if self.heros_instance[st].alive: self.roundstart(st)
             if self.heros_instance[st].alive: self.playcardstart(st)
             if self.heros_instance[st].alive: self.roundend(st)

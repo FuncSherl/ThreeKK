@@ -49,7 +49,8 @@ class card_attack(base_basic.base):
         
         #if not person_end.on_be_playcard(person_start, card): return False
         
-        tep=cls.on_ask_response(person_start, person_end)            
+        #on_ask_response(cls, person_start, person_end ,selectcnt=1, active=False, go_on=False, cards_sel=against_names)
+        tep=cls.on_ask_response(person_start, person_end, cards_sel=cls.against_names)            
             
         if not tep: #命中
             return True #cls.on_hit_player(person_start, person_end, card)        
