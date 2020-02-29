@@ -47,7 +47,7 @@ class base:
         self.horse_plus=[]
         self.delayed_skill=[]
         
-        self.all_the_cards_holders=lambda :[self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus]
+        self.all_the_cards_holders=lambda :[self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus, self.delayed_skill]
         
         
     def round_init(self):

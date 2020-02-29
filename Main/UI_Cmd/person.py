@@ -25,12 +25,14 @@ class person(object):
         self.name_chinese=Persons.class_list[id].name
         self.health=Persons.class_list[id].blood
         self.describ_hero=Persons.class_list[id].describ_skill_list
-        self.cards=[[2,1,2], [1,2,3], [3,3,6], [4, 2, 12]]
+        self.cards=[]#[[2,1,2], [1,2,3], [3,3,6], [4, 2, 12]]
         self.cards_to_sel=[]
         self.armers=[]
         self.shields=[]
         self.horse_minus=[]
         self.horse_plus=[]
+        self.delayed_skill=[]
+        
         self.mlen=0
         self.mydescr=self.get_describe()
         self.mhigh=len(self.mydescr)
@@ -39,7 +41,7 @@ class person(object):
         self.playcard_y=0
         
     def set_all_cards(self, all_the_cards_holders):
-        self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus=all_the_cards_holders
+        self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus, self.delayed_skill=all_the_cards_holders
         
     
     def add_box(self, info_list, withleft=True, withright=True):

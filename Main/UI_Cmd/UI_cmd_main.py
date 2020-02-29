@@ -39,7 +39,9 @@ class UI_cmd:
     
     def __init__(self, ipstr='127.0.0.1'):
         self.ipstr=ipstr
-        self.socket=self.connect_server(self.ipstr)
+        self.socket=None
+        while not self.socket: self.socket=self.connect_server(self.ipstr)
+        
         self.msg_queue=[]
         self.listen_fail_cnt=0
 
@@ -49,7 +51,7 @@ class UI_cmd:
             for j in range(self.width):
                 self.pannel[-1].append(ord(' '))
         #最多支持6个人才不会重叠
-        self.person_instance=[person(0,0), person(1,1),person(2,2),person(1,1),person(2,2)]
+        self.person_instance=[]#[person(0,0), person(1,1),person(2,2),person(1,1),person(2,2)]
         self.myindex=0
         self.game_status=True
         #self.pannel[:,:]=ord(' ')
@@ -303,16 +305,16 @@ class UI_cmd:
             if not tmsg: return None
             
         except  socket.timeout:
-            print ('ERROR:detected timeout')
+            print ("\rERROR:detected timeout", end='')
             return None
         except Exception as e:
-            print ('unexpected error:', str(e))
+            print ("\runexpected error:"+ str(e), end='')
             return None
         msg_list_str=tmsg.decode('utf-8')
-        print ('recv:',msg_list_str)
+        #print ('recv:',msg_list_str)
         msg_list=msg_list_str.split(Config.Message_tail)
         ret=[json.loads(x) for x in msg_list if x]
-        print ('recv:',ret)
+        #print ('recv:',ret)
         return ret
     
     
@@ -353,7 +355,7 @@ class UI_cmd:
                     if int(i) in endforsel:
                         ends.append(int(i))
         except Exception as e:
-            print ('str2playcard error:', str(e))
+            print ("\rstr2playcard error:"+str(e), end='')
         finally:
             return [cards, ends]
     

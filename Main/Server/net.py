@@ -95,7 +95,7 @@ class Server:
         
 if __name__ == '__main__':
     tep=Server()
-    tep.main_loop(2)
+    tep.main_loop(1)
 
         
         
