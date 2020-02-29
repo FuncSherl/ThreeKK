@@ -11,11 +11,12 @@ from Common import Config,Message
 from UI_Cmd.person import person 
 import socket ,time
 import sys,json,msvcrt
-import eventlet
 import numpy as np
 import platform
 syst = platform.system()
-eventlet.monkey_patch()
+
+#import eventlet
+#eventlet.monkey_patch()
 
 
 class UI_cmd:        
@@ -39,21 +40,22 @@ class UI_cmd:
     def __init__(self, ipstr='127.0.0.1'):
         self.ipstr=ipstr
         self.socket=self.connect_server(self.ipstr)
+        self.msg_queue=[]
 
         self.pannel=[]
         for i in range(self.height):
             self.pannel.append([])
             for j in range(self.width):
-                self.pannel[-1].append(' ')
+                self.pannel[-1].append(ord(b' '))
         #最多支持6个人才不会重叠
-        self.person_instance=[]
-        self.myindex=None
+        self.person_instance=[person(0,0), person(1,1),person(2,2),person(1,1),person(2,2)]
+        self.myindex=0
         self.game_status=True
         #self.pannel[:,:]=ord(' ')
         #char->ascll ord('c')
         #ascll->char chr(97)
         #for i in self.pannel: print (''.join(i))
-        #self.update()
+        self.update()
         
         
         
@@ -99,11 +101,11 @@ class UI_cmd:
         
         for ind,i in enumerate(res):
             tstr=str(ind)+'>'+i+'    '
-            if stx+len(tstr.encode('utf-8'))+mlen+1>self.width:
+            if stx+len(tstr.encode())+mlen+1>self.width:
                 stx=0
                 sty+=2
             self.draw_panel([tstr], sty, stx)
-            stx+=len(tstr.encode('utf-8'))
+            stx+=len(tstr.encode())
             
     def draw_play_cards(self, cards):
         descs=[person.form_card(x) for x in cards]
@@ -121,22 +123,22 @@ class UI_cmd:
         inch_y=1 if edy>sty else -1
         while not (stx==edx and sty==edy):
             if abs(edy-sty)>abs(edx-stx):
-                self.pannel[sty][stx]='|'
+                self.pannel[sty][stx]=ord(b'|')
                 sty+=inch_y
             elif abs(edy-sty)<abs(edx-stx):
-                self.pannel[sty][stx]='-'
+                self.pannel[sty][stx]=ord(b'-')
                 stx+=inch_x
             else:
-                self.pannel[sty][stx]='/'
-                if (edy-sty)*(edx-stx)>=0: self.pannel[sty][stx]='\\'
+                self.pannel[sty][stx]=ord(b'/')
+                if (edy-sty)*(edx-stx)>=0: self.pannel[sty][stx]=ord(b'\\')
         tep=None
         if abs(edy-kep_sty)>abs(edx-kep_stx): 
-            tep='^'
-            if edy>kep_sty:tep='v'
+            tep=b'^'
+            if edy>kep_sty:tep=b'v'
         else:
-            tep='<'
-            if edx>kep_stx: tep='>'
-        self.pannel[sty][stx]=tep
+            tep=b'<'
+            if edx>kep_stx: tep=b'>'
+        self.pannel[sty][stx]=ord(tep)
             
     def normal_draw_all(self, cards_list):
         #正常对局下的每次打印
@@ -176,8 +178,10 @@ class UI_cmd:
         
         for ind,i in enumerate(self.pannel[:self.height]): 
             #i[:2]='% 2d'%ind
-            ti=''.join(i).encode('utf-8')
-            ti=ti[:self.width].decode('utf-8', errors='ignore')
+            #ti=''.join(i).encode('utf-8')
+            #ti=ti[:self.width].decode('utf-8', errors='ignore')
+            #print ( i)
+            ti=bytes(i).decode( errors='ignore')
                         
             #len(ti.encode('utf-8'))-self.width-1
             print (ti)
@@ -237,8 +241,9 @@ class UI_cmd:
     
     
     def draw_panel(self, info_list, yy, xx):
+        info_list=[ x.encode() for x in info_list]
         #y行x列为起点
-        mlen=max([len(x.encode('utf-8')) for x in info_list])
+        mlen=max([len(x) for x in info_list])
         
         #截断
         info_list=info_list[:self.height] 
@@ -255,7 +260,7 @@ class UI_cmd:
     def clean_panel(self):
         for i in self.pannel:
             for j in range(len(i)):
-                i[j]=' '
+                i[j]=ord(b' ')
     
     def clean_screen(self):
         if syst == "Windows":  os.system("cls") # windows上执行cls命令
@@ -280,6 +285,7 @@ class UI_cmd:
             print ('unexpected error:', str(e))
             return None
         msg_list_str=tmsg.decode('utf-8')
+        print ('recv:',msg_list_str)
         msg_list=msg_list_str.split(Config.Message_tail)
         ret=[json.loads(x) for x in msg_list if x]
         print ('recv:',ret)
@@ -287,19 +293,21 @@ class UI_cmd:
     
     
     def listen_distribute(self, msgwant=[]):
-        #return 是否执行了msg中的对应函数
         self.function_table=Message.make_msg2fun(self)
+        
+        while self.msg_queue:
+            print (self.msg_queue)
+            name=self.msg_queue[0]['msg_name']
+            if msgwant and name not in msgwant: self.msg_queue.pop(0)
+            else: return self.function_table[name](self.msg_queue.pop(0))
+        
         msg_list=self.send_recv(self.socket)
         
         if not msg_list: return msg_list
-        ret=False
-        for ind,msg in enumerate(msg_list):
-            if msgwant and msg['msg_name'] not in msgwant: continue
-            
-            name=msg['msg_name']
-            self.function_table[name](msg)
-            ret=True
-        return ret
+        
+        self.msg_queue.extend(msg_list)
+
+        return self.listen_distribute(msgwant)
         
                 
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息

@@ -7,7 +7,8 @@ Created on 2020年2月12日
 Port=7999   #监听端口
 Timeout=18   #recv的超时时间 s
 HeartBeat=3 #心跳时间间隔 s 
-FailerCnt=5
+FailerCnt=3 #出牌失败cnt
+
 BuffSize=1024*2   #recv bufsize
 HerosforSelect=3    #提供多少person供选择
 Cardsforinit=4  #一开始每个人多少牌

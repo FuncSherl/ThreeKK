@@ -159,6 +159,9 @@ class base:
         self.send_msg_to_all(msg)
     
     def on_pickhero(self):  #2
+        Config.HerosforSelect=min(int(len(Persons.class_list)/len(self.socket_list)), Config.HerosforSelect)
+        Config.HerosforSelect=max(Config.HerosforSelect, 1)#这里防止可选英雄太少，导致错误,如果每人一个都还少那就没办法了
+        
         cnt_ned=len(self.socket_list)*Config.HerosforSelect
         hero_list=random.sample(list( range( len(Persons.class_list) )), cnt_ned)
         for ind,i in enumerate(self.socket_list):

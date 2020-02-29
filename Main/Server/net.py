@@ -57,8 +57,7 @@ class Server:
     def inform_all(self, sock_list, message):
         msg=Message.form_inform_beforegame(message, reply=False)
         for i in sock_list:
-            msg=json.dumps(msg)
-            i.send(msg.encode('utf-8'))
+            Rooms_base.base.send_map_str(i, msg)
     
     
     def form_room(self, cnt=5, roomtype=Rooms_base.base):
@@ -96,8 +95,8 @@ class Server:
         
 if __name__ == '__main__':
     tep=Server()
-    tep.main_loop(1)
-    tep.cleanup()
+    tep.main_loop(2)
+
         
         
         

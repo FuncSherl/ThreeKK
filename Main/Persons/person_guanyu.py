@@ -40,7 +40,7 @@ class person_guanyu(base.base):
                     print (res)
                     card,ed=res[0][0],res[1][0]
                     card[0]=Cards.map_name_id['杀']
-                    self.play_one_card(ed, card, active=True)
+                    self.play_one_card(self.room.heros_instance[ed], card, active=True)
                     continue
             
             #如果没有红牌或者不发动技能
