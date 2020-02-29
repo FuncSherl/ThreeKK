@@ -25,7 +25,7 @@ class UI_cmd:
     
 
     user_stx=int(width/4)
-    user_sty=int(height*4/5)
+    user_sty=int(height*1/2)
     
     playarea_y=person.mheight+10
     
@@ -46,7 +46,7 @@ class UI_cmd:
         for i in range(self.height):
             self.pannel.append([])
             for j in range(self.width):
-                self.pannel[-1].append(ord(b' '))
+                self.pannel[-1].append(ord(' '))
         #最多支持6个人才不会重叠
         self.person_instance=[person(0,0), person(1,1),person(2,2),person(1,1),person(2,2)]
         self.myindex=0
@@ -101,11 +101,11 @@ class UI_cmd:
         
         for ind,i in enumerate(res):
             tstr=str(ind)+'>'+i+'    '
-            if stx+len(tstr.encode())+mlen+1>self.width:
+            if stx+person.get_show_len(tstr)+mlen+1>self.width:
                 stx=0
                 sty+=2
-            self.draw_panel([tstr], sty, stx)
-            stx+=len(tstr.encode())
+            _,stx=self.draw_panel([tstr], sty, stx)
+            #print (self.pannel[sty])
             
     def draw_play_cards(self, cards):
         descs=[person.form_card(x) for x in cards]
@@ -123,22 +123,28 @@ class UI_cmd:
         inch_y=1 if edy>sty else -1
         while not (stx==edx and sty==edy):
             if abs(edy-sty)>abs(edx-stx):
-                self.pannel[sty][stx]=ord(b'|')
+                self.panel_set_at('|', stx, sty)
+                #self.pannel[sty][stx]=ord(b'|')
                 sty+=inch_y
             elif abs(edy-sty)<abs(edx-stx):
-                self.pannel[sty][stx]=ord(b'-')
+                self.panel_set_at('-', stx, sty)
+                #self.pannel[sty][stx]=ord(b'-')
                 stx+=inch_x
             else:
-                self.pannel[sty][stx]=ord(b'/')
-                if (edy-sty)*(edx-stx)>=0: self.pannel[sty][stx]=ord(b'\\')
+                self.panel_set_at('/', stx, sty)
+                #self.pannel[sty][stx]=ord(b'/')
+                if (edy-sty)*(edx-stx)>=0: 
+                    self.panel_set_at('\\', stx, sty)
+                    #self.pannel[sty][stx]=ord(b'\\')
         tep=None
         if abs(edy-kep_sty)>abs(edx-kep_stx): 
-            tep=b'^'
-            if edy>kep_sty:tep=b'v'
+            tep='^'
+            if edy>kep_sty:tep='v'
         else:
-            tep=b'<'
-            if edx>kep_stx: tep=b'>'
-        self.pannel[sty][stx]=ord(tep)
+            tep='<'
+            if edx>kep_stx: tep='>'
+        self.panel_set_at(tep, stx, sty)
+        #self.pannel[sty][stx]=(tep)
             
     def normal_draw_all(self, cards_list):
         #正常对局下的每次打印
@@ -176,12 +182,12 @@ class UI_cmd:
         #for test
         #self.draw_play_cards(person().cards)
         
-        for ind,i in enumerate(self.pannel[:self.height]): 
+        for ind,i in enumerate(self.pannel): 
             #i[:2]='% 2d'%ind
-            #ti=''.join(i).encode('utf-8')
+            ti=''.join(i)
             #ti=ti[:self.width].decode('utf-8', errors='ignore')
             #print ( i)
-            ti=bytes(i).decode( errors='ignore')
+            #ti=bytes(i).decode( errors='ignore')
                         
             #len(ti.encode('utf-8'))-self.width-1
             print (ti)
@@ -239,28 +245,43 @@ class UI_cmd:
             if not self.listen_distribute():time.sleep(0.5)
         print ('Room Destroyed!')
     
+    def panel_set_at(self, char_str, stx, sty):
+        if sty>=len(self.pannel): return stx     #self.panel_set_at(char_str, 0, 0)
+        if stx>=len(self.pannel[0]):  return stx     #self.panel_set_at(char_str, 0, sty+1)
+        self.pannel[sty][stx]=char_str        
+        if len(char_str.encode())>1:            
+            self.pannel[sty][stx+1]=''
+            return stx+2
+        return stx+1
+            
+    
     
     def draw_panel(self, info_list, yy, xx):
-        info_list=[ x.encode() for x in info_list]
+        #info_list=[ x.encode() for x in info_list]
         #y行x列为起点
-        mlen=max([len(x) for x in info_list])
+        mlen=max([person.get_show_len( x) for x in info_list])
         
         #截断
         info_list=info_list[:self.height] 
-        info_list=[x[:self.width] for x in info_list]
+        for i in info_list:
+            while person.get_show_len( i )>self.width: i=i[:-1]
             
         yy=min(yy, self.height-len(info_list))
         yy=max(yy, 0)
         xx=min(xx, self.width-mlen)
         xx=max(xx, 0)
         for ind,i in enumerate(info_list):
+            stxx=xx
+            styy=yy+ind
             for j in range(len(i)):
-                self.pannel[yy+ind][j+xx]=i[j]        
+                stxx=self.panel_set_at(i[j], stxx, styy)
+                #self.pannel[yy+ind][j+xx]=i[j]    
+        return     styy, stxx
                 
     def clean_panel(self):
         for i in self.pannel:
             for j in range(len(i)):
-                i[j]=ord(b' ')
+                i[j]=' '
     
     def clean_screen(self):
         if syst == "Windows":  os.system("cls") # windows上执行cls命令
