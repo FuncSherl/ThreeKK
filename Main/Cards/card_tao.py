@@ -38,9 +38,9 @@ class card_tao(base_basic.base):
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
         #默认以杀为例
-        person_end.addhealth(person_start, 1, card=card)
-        return True
-
+        if not person_end: return person_start.addhealth(person_start, 1, card=card)
+        return person_end.addhealth(person_start, 1, card=card)
+        
 
 
 

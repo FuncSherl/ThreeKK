@@ -45,6 +45,9 @@ class card_attack(base_basic.base):
                 if Cards.class_list[i[0]].on_attacked(): return False
         '''
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!上面的可以优化
+        if not person_end: 
+            print ('ERROR:attack with None end:',person_end)
+            return False
         person_start.attack_cnt+=1  #先记录该次出牌
         
         #if not person_end.on_be_playcard(person_start, card): return False

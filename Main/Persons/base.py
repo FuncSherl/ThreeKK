@@ -78,7 +78,7 @@ class base:
             msg=Message.form_roundend_dropcard(0, 0, 0, [self.playerid], [dropcnt], reply=False)
             self.room.send_msg_to_all(msg, replylist=[self.playerid])
                 
-            if not self.listen_distribute([Message.msg_types[13]]):
+            if not self.listen_distribute([Message.msg_types[13], Message.msg_types[14]]):
                 dropedcards=self.cards[:dropcnt]
                 self.dropcard(dropedcards)    
         self.round_status=False           
@@ -119,8 +119,8 @@ class base:
     
     def play_one_card(self, endperson, card, active):
         #return True: normal本次出牌起到了效果      False: 本次出牌无效
-        if self.before_playcards(endperson, card): #只有出牌方同意
-            if not endperson.on_be_playcard(self, card):  #被出牌方才能进行盾牌的格挡判断 
+        if  self.before_playcards(endperson, card): #只有出牌方同意
+            if endperson and not endperson.on_be_playcard(self, card):  #被出牌方才能进行盾牌的格挡判断 
                 return True   
         #这后面的处理就不要考虑装备效果了， 在牌各自的处理中只处理自己的事
         tesu=Cards.class_list[ card[0] ].on_be_playedto(self, endperson, card)
@@ -444,13 +444,15 @@ class base:
         self.cards.extend(cards_list)
         
     def dropcard(self, cards_list):
+        print (cards_list)
         for i in cards_list:
-            for j in self.all_the_cards_holders(): 
+            for indj,j in enumerate(self.all_the_cards_holders()): 
+                print (i, j, i in j)
                 if i in j:
-                    j.remove(i)
+                    self.all_the_cards_holders()[indj].remove(i)
                     self.room.drop_cards([i]) #牌进入弃牌堆
                     break
-                    
+        print (self.all_the_cards_holders())
         #for i in cards_list: self.cards.remove(i)  #出牌了
         
     def cal_distance(self, startplayerid, endplayerid):
