@@ -44,9 +44,11 @@ class card_juedou(base_skill.base):
         cnt=len(person_start.room.socket_list)
         tid=(person_start.playerid+1)%cnt
         
-        if not person_end and cnt>2:#自动推理不出来 
-            print ('JueDou ERROR:end target error!')
-            return False
+        if not person_end and len(person_start.room.socket_list)>2: 
+            print ('ERROR:JueDou with None end:',person_end)
+            exit(-1)
+        #否则可进行自动推断
+        if not person_end: person_end=person_start.room.heros_instance[1-person_start.playerid]
         
         while tid!=person_start.playerid:
             #on_ask_response(cls, person_start, person_end ,selectcnt=1, active=False, go_on=False, cards_sel=None, againstnames=None)

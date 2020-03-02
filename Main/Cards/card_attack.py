@@ -45,9 +45,12 @@ class card_attack(base_basic.base):
                 if Cards.class_list[i[0]].on_attacked(): return False
         '''
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!上面的可以优化
-        if not person_end: 
+        if not person_end and len(person_start.room.socket_list)>2: 
             print ('ERROR:attack with None end:',person_end)
-            return False
+            exit(-1)
+        #否则可进行自动推断
+        if not person_end: person_end=person_start.room.heros_instance[1-person_start.playerid]
+        
         person_start.attack_cnt+=1  #先记录该次出牌
         
         #if not person_end.on_be_playcard(person_start, card): return False

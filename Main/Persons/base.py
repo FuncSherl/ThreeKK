@@ -346,6 +346,7 @@ class base:
     
     ################################################################################
     def judge_playcard(self, cards, ed):
+        #cards:打出的牌           ed：玩家的id，即index，不是英雄id
         #当收到玩家打出一张牌时，根据出牌时的状态判断该牌出的是否合理 
         if len(cards) != self.cards_num_play:  return False
             
@@ -353,7 +354,9 @@ class base:
             if i not in self.cards_may_play:       return False
         
         for i in ed: 
-            if not self.room.heros_instance[i].alive: return False
+            if not self.room.heros_instance[i].alive: 
+                print ('Person %s not alive...'%self.room.heros_instance[i].name)
+                return False
         
         print (self.cards_end_may)
         if self.cards_end_may is None:#判定牌的目标合理性,None表示根据牌来定
@@ -363,9 +366,13 @@ class base:
                
                 if len(endids)==tn: continue  #这种情况下不用选择,这种情况代表该牌知道自己的目标，在该牌的处理过程中不应该参考玩家选择的end
                 tmaxn=max(tn, max(self.cards_end_num) )  #有时可以选择多个目标，比原来的要多
-                if len(ed)>tmaxn or len(ed)<=0:return False
+                if len(ed)>tmaxn or len(ed)<=0:
+                    print ('Target num not right:%d ...'%len(ed))
+                    return False
                 for j in ed:
-                    if j not in endids: return False           
+                    if j not in endids: 
+                        print ('Target %s should not appear...'%self.room.heros_instance[j].name)
+                        return False           
         else:
             if len(ed) not in self.cards_end_num: return False
             for i in ed:
@@ -407,7 +414,7 @@ class base:
         if not self.judge_playcard(cards, ed): 
             self.failer_cnt+=1  #限制出牌失败次数
             if self.failer_cnt>=Config.FailerCnt:return False
-            return  self.playcard(cardtoselect, selectcnt, inform, end, endnum, active)            
+            return  self.playcard(cardtoselect, selectcnt, inform, end, endnum, active, go_on)            
         
         
         #出牌没问题
