@@ -61,6 +61,12 @@ class card_juedou(base_skill.base):
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
+        if not person_end and len(person_start.room.socket_list)>2: 
+            print ('ERROR:attack with None end:',person_end)
+            exit(-1)
+        #否则可进行自动推断
+        if not person_end: person_end=person_start.room.heros_instance[1-person_start.playerid]
+        
         tep=cls.on_ask_response(person_start, person_end, active=False, go_on=False,  cards_sel=cls.against_names[1:])
         if tep: return  not cls.on_hit_player(person_end, person_start, card)
         #diaoxue

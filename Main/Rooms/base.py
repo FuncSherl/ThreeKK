@@ -7,6 +7,7 @@ Created on 2020年2月12日
 from Common import Config,Message
 import socket,json,random
 import Persons,Cards
+import threading
 
 class base:
     def __init__(self, socket_list):
@@ -248,6 +249,8 @@ class base:
     
     #main function
     def start(self):
+        print ('Room starting at thread:',threading.current_thread().getName())
+        
         self.on_gamestart()
         self.on_pickhero()
         self.on_gameinited()
@@ -264,7 +267,7 @@ class base:
             st%=len(self.socket_list)
             
         self.on_gameend()
-
+        print ('Room end at thread:',threading.current_thread().getName())
 
 
 

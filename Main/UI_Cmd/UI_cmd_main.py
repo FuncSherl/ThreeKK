@@ -4,7 +4,7 @@ Created on 2020年2月26日
 
 @author: sherl
 '''
-import os,math
+import os,math,re
 import Cards,Persons,Rooms
 from Rooms import base
 from Common import Config,Message
@@ -34,7 +34,7 @@ class UI_cmd:
     start_angle=math.acos(center_x*1.0/center_y)
     
     split_card_hero='>'
-    split_cards=' ,.'
+    split_cards=r'\s*[;,\.\s]\s*'
     split_heros=split_cards
     
     def __init__(self, ipstr='127.0.0.1'):
@@ -222,6 +222,9 @@ class UI_cmd:
             l_m=len(str_b)-len(str)
             return str.ljust(self.width-l_m)
         
+        #sys.stdin.flush()#清空输入缓冲
+        while msvcrt.kbhit():msvcrt.getche()
+        
         inform=str2width(informmsg+'(%2d):'%(timeout))
         start_time = time.time()
         input_str = ''
@@ -354,15 +357,16 @@ class UI_cmd:
         cards=[]
         ends=[]
         try:
-            sp=pstr.split(self.split_card_hero)
-            print (sp)#DEBUG
+            sp=re.split(self.split_card_hero, pstr)
+            print (sp)#DEBUG  ['1,2']
             if sp[0]:
-                for  i in sp[0].split(self.split_cards):
+                for  i in re.split(self.split_cards, sp[0]):
+                    print ('cards :',cards)
                     if len(cards)<selcnt and int(i)<len(self.person_instance[self.myindex].cards) and int(i)>=0: 
                         cards.append(self.person_instance[self.myindex].cards[int(i)]  )
                     
             if len(sp)>1 and sp[1]:
-                for  i in sp[1].split(self.split_heros):
+                for  i in re.split(self.split_heros, sp[1]):
                     if not i : continue
                     
                     if endforsel is None and int(i)<len(self.person_instance) and int(i)>=0: 
@@ -371,7 +375,8 @@ class UI_cmd:
                     if int(i) in endforsel:
                         ends.append(int(i))
         except Exception as e:
-            print ("\rstr2playcard error:"+str(e), end='')
+            print ("str2playcard error:"+str(e), end='')
+            #str2playcard error:invalid literal for int() with base 10: '1,2'
         finally:
             return [cards, ends]
     
@@ -513,10 +518,7 @@ class UI_cmd:
         self.update()
         return True
     
-    def on_roundend_dropcard(self, msg):
-        drop_sel_cards=msg['forth']
-        self.person_instance[self.myindex].cards=drop_sel_cards #这里只是暂存,下一个信息来的时候还会重置
-        
+    def on_roundend_dropcard(self, msg):  
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         '''
         dropedcards=[self.cards[x]  for x in msg['third']]
@@ -530,6 +532,7 @@ class UI_cmd:
             print ("\r%s Droping %2d Cards..."%(self.person_instance[st].name, dcnt), end='')
             return True        
         res=self.input_withtimeout('回合结束，请弃%d张牌:'%dcnt, str)
+        
         
         
         if not res:

@@ -66,6 +66,12 @@ class card_attack(base_basic.base):
 
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
+        if not person_end and len(person_start.room.socket_list)>2: 
+            print ('ERROR:attack with None end:',person_end)
+            exit(-1)
+        #否则可进行自动推断
+        if not person_end: person_end=person_start.room.heros_instance[1-person_start.playerid]
+        
         #默认以杀为例
         damage=cls.damage+person_start.round_additional_damage_attack+person_start.next_additional_damage_attack
         person_start.next_additional_damage_attack=0  #去掉酒这种buff

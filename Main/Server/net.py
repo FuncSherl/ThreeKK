@@ -85,7 +85,7 @@ class Server:
         while True:
             print ('Forming Rooms of %d People...'%cnt)
             teproom=self.form_room(cnt)
-            sd=threading.Thread(target=teproom.start(), args=())
+            sd=threading.Thread(target=teproom.start, args=())
             sd.start()
         self.cleanup()
             
