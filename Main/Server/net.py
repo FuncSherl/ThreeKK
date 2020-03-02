@@ -83,6 +83,7 @@ class Server:
             
     def main_loop(self, cnt=5):
         while True:
+            print ('Forming Rooms of %d People...'%cnt)
             teproom=self.form_room(cnt)
             sd=threading.Thread(target=teproom.start(), args=())
             sd.start()
@@ -94,8 +95,14 @@ class Server:
         
         
 if __name__ == '__main__':
+    cnt=input('请输入房间人数(建议设置2-6)(default:3):')
+    try:
+        cnt=int(cnt)
+    except Exception as e:
+        print ('unexpected error:',str(e),' Using Default...')
+        cnt=3
     tep=Server()
-    tep.main_loop(2)
+    tep.main_loop(cnt)
 
         
         

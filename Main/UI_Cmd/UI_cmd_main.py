@@ -417,6 +417,7 @@ class UI_cmd:
         self.update( )
         
         #print (self.pannel)  #DEBUG
+        #self.played_cards=[[],[],[]]
         
         return msg
         

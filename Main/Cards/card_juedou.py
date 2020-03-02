@@ -44,6 +44,10 @@ class card_juedou(base_skill.base):
         cnt=len(person_start.room.socket_list)
         tid=(person_start.playerid+1)%cnt
         
+        if not person_end and cnt>2:#自动推理不出来 
+            print ('JueDou ERROR:end target error!')
+            return False
+        
         while tid!=person_start.playerid:
             #on_ask_response(cls, person_start, person_end ,selectcnt=1, active=False, go_on=False, cards_sel=None, againstnames=None)
             tep=cls.on_ask_response(person_start, person_start.room.heros_instance[tid], \

@@ -43,7 +43,7 @@ class card_qinggangjian(base_armer.base):
     
     @classmethod
     def on_hit_player(cls,  person_start, person_end, card):
-        if not person_end: return person_start.add_armer()
+        if not person_end: person_end=person_start
         
         return person_end.add_armer(card)
         

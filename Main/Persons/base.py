@@ -357,8 +357,10 @@ class base:
         
         print (self.cards_end_may)
         if self.cards_end_may is None:#判定牌的目标合理性,None表示根据牌来定
-            for i in cards:
-                tn,endids=Cards.class_list[ i[0] ].cal_targets(self)
+            for i in cards: 
+                #这种情况下表示即不指定target，也是能出牌的，该牌可以自行推断出来，否则就需要判断target自定是否合理，因此在每个牌的on_be_playedto中需要对end进行判断
+                tn,endids=Cards.class_list[ i[0] ].cal_targets(self)   
+               
                 if len(endids)==tn: continue  #这种情况下不用选择,这种情况代表该牌知道自己的目标，在该牌的处理过程中不应该参考玩家选择的end
                 tmaxn=max(tn, max(self.cards_end_num) )  #有时可以选择多个目标，比原来的要多
                 if len(ed)>tmaxn or len(ed)<=0:return False
