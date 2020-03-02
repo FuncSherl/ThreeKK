@@ -75,7 +75,7 @@ class base:
             #启动弃牌
             dropcnt=len(self.cards)-self.health
             
-            msg=Message.form_roundend_dropcard(0, 0, 0, [self.playerid], [dropcnt], reply=False)
+            msg=Message.form_roundend_dropcard(0, 0, 0, [self.playerid], [dropcnt], self.cards, reply=False)
             self.room.send_msg_to_all(msg, replylist=[self.playerid])
                 
             if not self.listen_distribute([Message.msg_types[13], Message.msg_types[14]]):

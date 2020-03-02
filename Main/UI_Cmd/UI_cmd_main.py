@@ -514,6 +514,9 @@ class UI_cmd:
         return True
     
     def on_roundend_dropcard(self, msg):
+        drop_sel_cards=msg['forth']
+        self.person_instance[self.myindex].cards=drop_sel_cards #这里只是暂存,下一个信息来的时候还会重置
+        
         if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         '''
         dropedcards=[self.cards[x]  for x in msg['third']]
@@ -522,10 +525,12 @@ class UI_cmd:
         '''
         st=msg['start'][0]
         dcnt=msg['third'][0]
+        
         if st!=self.myindex: 
             print ("\r%s Droping %2d Cards..."%(self.person_instance[st].name, dcnt), end='')
             return True        
         res=self.input_withtimeout('回合结束，请弃%d张牌:'%dcnt, str)
+        
         
         if not res:
             msg=Message.form_askselect(self.myindex, msg['heros'], msg['cards'], [self.myindex], None, None, [], select_cnt=0, reply=False)

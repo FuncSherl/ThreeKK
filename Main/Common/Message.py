@@ -64,9 +64,9 @@ def form_gameinited(myid, myheroid, mycards ,herolist, reply=False):#游戏初�
     return form_msg(msg_types[12], myid=myid, myhero=myheroid, mycards=mycards, \
                     third=herolist, reply=reply)
 
-def form_roundend_dropcard(myid, myheroid, mycards, end, dropcnt, reply=True):#回合结束弃牌阶段，同roundstart
+def form_roundend_dropcard(myid, myheroid, mycards, end, dropcnt,sel_cards, reply=True):#回合结束弃牌阶段，同roundstart
     return form_msg(msg_types[13], myid=myid, myhero=myheroid, mycards=mycards, \
-                    start=end ,end=end, third=dropcnt, reply=reply)
+                    start=end ,end=end, third=dropcnt, forth=sel_cards,reply=reply)
 
 def form_askselect(myid, myheroid, mycards, start, end, informmsg, cardstoselect, select_cnt=1,reply=False):
     return form_msg(msg_types[14], myid=myid, myhero=myheroid, mycards=mycards, \
