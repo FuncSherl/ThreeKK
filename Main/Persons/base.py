@@ -359,7 +359,7 @@ class base:
         if self.cards_end_may is None:#判定牌的目标合理性,None表示根据牌来定
             for i in cards:
                 tn,endids=Cards.class_list[ i[0] ].cal_targets(self)
-                if len(endids)==tn: continue  #这种情况下不用选择
+                if len(endids)==tn: continue  #这种情况下不用选择,这种情况代表该牌知道自己的目标，在该牌的处理过程中不应该参考玩家选择的end
                 tmaxn=max(tn, max(self.cards_end_num) )  #有时可以选择多个目标，比原来的要多
                 if len(ed)>tmaxn or len(ed)<=0:return False
                 for j in ed:
