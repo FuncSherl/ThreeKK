@@ -2,11 +2,12 @@
 
 ## 使用方法
 ### 服务端
-	 直接用python3启动Main中Server/net.py，或者运行Start_Server.bat(Widows)或.sh(Linux)
-	运行后选择每个房间的人数即可启动服务
+* 直接用python3启动Main中Server/net.py，或者运行Start_Server.bat(Widows)或.sh(Linux)
+* 运行后选择每个房间的人数即可启动服务
 ### 客户端（CMD版本）
-	 直接用python3启动Main中UI_Cmd/UI_cmd_main.py，或者运行Start_UI_Cmd.bat(Windows)或.sh(Linux)
-	等待所有玩家连接完成即可启动房间开始游戏
+* 直接用python3启动Main中UI_Cmd/UI_cmd_main.py，或者运行Start_UI_Cmd.bat(Windows)或.sh(Linux)
+* 等待所有玩家连接完成即可启动房间开始游戏
+* 游戏出牌方式：牌的表示利用牌前面的序号，目标利用目标中的index，其中牌与目标用'>'分割，各牌及目标之间用',. '都可以分割，eg. 0,1>2,3 出第0和1张牌，目标是2和3号人物
 	
 	
 
