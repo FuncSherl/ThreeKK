@@ -26,21 +26,42 @@
 * __Server__：收到该消息代表客户端打出牌，其中third为打出的牌list；end为list of牌的目标玩家id
 * __Client__：收到消息中，start与end表示打出牌的起点和终点，均为玩家id（不是英雄id）；third字段为list，保存打出的牌；收到消息判断是否是自己打出的牌（start==self.playerid），据此反应不同
 
-### 3. 'gamestart' msg:  
-* __Server__：no information to trans, but to check link status, reply matters  
+### 3. 'judgement' msg:  
+* __Server__：  
 * __Client__：
 
-### 4. 'pickhero' msg:  
-* __Server__：no information to trans, but to check link status, reply matters  
+### 4. 'getcard' msg:  
+* __Server__：  
 * __Client__：
 
+### 5. 'roundstart' msg:  
+* __Server__：  
+* __Client__：
+
+### 6. 'roundend' msg:  
+* __Server__：  
+* __Client__：
+
+### 7. 'gamestart' msg:  
+* __Server__：  
+* __Client__：
+
+### 8. 'gameend' msg:  
+* __Server__：  
+* __Client__：
+
+### 9. 'skillstart' msg:  
+* __Server__：  
+* __Client__：
+
+**未完Doing...**
 
 
 
 ## Doing
 - [x] 服务端
 - [x] UI_CMD版本
-- [x] 使用说明
+- [ ] 使用说明 Doing
 - [ ] 更多人物
 - [ ] 更多牌类型
 - [ ] 其他客户端
