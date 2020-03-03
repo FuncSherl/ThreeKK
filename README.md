@@ -11,7 +11,8 @@
 ## 消息格式 
 以下为各个消息及其分别在客户端和server端的字段含义
 1. 'heartbeat' msg：  
-	no information to trans, but to check link status, reply matters  
+   Server：no information to trans, but to check link status, reply matters  
+   Client：
 2. 'playcard' msg：  
 	test
 3. gamestart msg:  
