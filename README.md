@@ -9,18 +9,25 @@
 	等待所有玩家连接完成即可启动房间开始游戏
 
 ## 消息格式 
-以下为各个消息及其分别在客户端和server端的字段含义
+以下为各个消息及其分别在客户端和server端的字段含义，其中每个消息具有`msg_name`、`myid`、`heros`、`cards`、`start`、`end`、`third`、`forth`、`fifth`、`reply`字段，其中
+* msg_name：代表消息类型，在下面详述
+* myid、heros、cards：分别代表本人在该场游戏中的id，场上各个玩家的英雄状态，场上各个玩家的牌状态
 
 ### 1. 'heartbeat' msg
 * __Server__：no information to trans, but to check link status, reply matters  
 * __Client__：
 
 ### 2. 'playcard' msg：  
-* __test__
+* __Server__：no information to trans, but to check link status, reply matters  
+* __Client__：
+
 ### 3. 'gamestart' msg:  
-* start seg means the id given to this client, which used to identity if the other order is from yourself
+* __Server__：no information to trans, but to check link status, reply matters  
+* __Client__：
+
 ### 4. 'pickhero' msg:  
-* for client, the third seg means heroes for s
+* __Server__：no information to trans, but to check link status, reply matters  
+* __Client__：
 
 
 
