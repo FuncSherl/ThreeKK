@@ -11,7 +11,7 @@
 ## 消息格式 
 以下为各个消息及其分别在客户端和server端的字段含义，其中每个消息具有`msg_name`、`myid`、`heros`、`cards`、`start`、`end`、`third`、`forth`、`fifth`、`reply`字段，其中
 * msg_name：代表消息类型，在下面详述
-* myid、heros、cards：分别代表本人在该场游戏中的id，场上各个玩家的英雄状态，场上各个玩家的牌状态
+* myid、heros、cards：分别代表本人在该场游戏中的id，场上各个玩家的英雄状态，场上各个玩家的牌状态，由于基本上每个消息中含义稳定，不再赘述
 * start、end：均为list类型，代表可能用得上的起始人物的id和目标人物id
 * third、forth、fifth：根据消息内容变化的字段，含义根据消息类型变化
 * reply：标识是否回复，主要用于客户端
