@@ -41,7 +41,7 @@ class person(object):
         self.playcard_y=0
         
     def set_all_cards(self, all_the_cards_holders):
-        self.cards, self.armer, self.shield, self.horse_minus, self.horse_plus, self.delayed_skill=all_the_cards_holders
+        self.cards, self.armers, self.shields, self.horse_minus, self.horse_plus, self.delayed_skill=all_the_cards_holders
         
     
     def add_box(self, info_list, withleft=True, withright=True):
@@ -81,10 +81,10 @@ class person(object):
     def form_other_person(self):
         return ['INDEX:%d'%self.myindex,\
                 '人物:'+self.name_chinese+'  HP:' +'*'*self.health, \
-                '武器:'+','.join( [Cards.class_list[x[0]].name_chinese for x in self.armers]),\
-              '防御:'+','.join( [Cards.class_list[x[0]].name_chinese for x in self.shields]), \
-              '马+1:'+','.join( [Cards.class_list[x[0]].name_chinese for x in self.horse_plus]),\
-              '马-1:'+','.join( [Cards.class_list[x[0]].name_chinese for x in self.horse_minus]),  '手牌:'+'N'*len(self.cards)]
+                '武器:'+','.join( [Cards.class_list[x[0]].name for x in self.armers]),\
+              '防御:'+','.join( [Cards.class_list[x[0]].name for x in self.shields]), \
+              '马+1:'+','.join( [Cards.class_list[x[0]].name for x in self.horse_plus]),\
+              '马-1:'+','.join( [Cards.class_list[x[0]].name for x in self.horse_minus]),  '手牌:'+'N'*len(self.cards)]
         
     def get_describe(self):
         return self.add_box(self.form_other_person())
