@@ -9,17 +9,13 @@
 	等待所有玩家连接完成即可启动房间开始游戏
 
 ## 消息格式 
-1. 'heartbeat' msg
+以下为各个消息及其分别在客户端和server端的字段含义
+1. 'heartbeat' msg：  
 	no information to trans, but to check link status, reply matters  
-2. 'playcard' msg
+2. 'playcard' msg：  
 	test
-3. gamestart msg:
+3. gamestart msg:  
 	start seg means the id given to this client, which used to identity if the other order is from yourself
-4. pickhero msg:
+4. pickhero msg:  
 	for client, the third seg means heroes for s
 
-面向对象的三个基本特征：
-
-1. 封装
-2. 继承
-3. 多态
