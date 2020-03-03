@@ -10,6 +10,7 @@
 
 ## 消息格式 
 以下为各个消息及其分别在客户端和server端的字段含义
+```
 1. 'heartbeat' msg：  
    Server：no information to trans, but to check link status, reply matters  
    Client：
@@ -19,4 +20,4 @@
 	start seg means the id given to this client, which used to identity if the other order is from yourself
 4. pickhero msg:  
 	for client, the third seg means heroes for s
-
+```
