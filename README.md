@@ -12,13 +12,23 @@
 以下为各个消息及其分别在客户端和server端的字段含义
 
 ### 1. 'heartbeat' msg
-*	Server：no information to trans, but to check link status, reply matters  
-*	Client：
+* __Server__：no information to trans, but to check link status, reply matters  
+* __Client__：
 
 ### 2. 'playcard' msg：  
-*	test
+* __test__
 ### 3. 'gamestart' msg:  
-*	start seg means the id given to this client, which used to identity if the other order is from yourself
+* start seg means the id given to this client, which used to identity if the other order is from yourself
 ### 4. 'pickhero' msg:  
-	for client, the third seg means heroes for s
+* for client, the third seg means heroes for s
 
+
+
+
+## Doing
+- [x] 服务端
+- [x] UI_CMD版本
+- [x] 使用说明
+- [ ] 编码
+- [ ] 测试
+- [ ] 交付
