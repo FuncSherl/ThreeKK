@@ -19,12 +19,12 @@
 以下说明对各种消息，服务端和客户端分别**收到**该消息的各字段含义
 
 ### 1. 'heartbeat' msg
-* __Server__：no information to trans, but to check link status, reply matters  
-* __Client__：
+* __Server__：无消息传递，只是check连接状态 
+* __Client__：根据reply字段选择是否回复一个同类消息，用于连接检测
 
 ### 2. 'playcard' msg：  
-* __Server__：无消息传递，只是check连接状态  
-* __Client__：根据reply字段选择是否回复一个同类消息，用于连接检测
+* __Server__：收到该消息代表客户端打出牌，其中third为打出的牌list；end为list，牌的目标玩家id
+* __Client__：收到消息中，start与end表示打出牌的起点和终点，均为玩家id（不是英雄id）；third字段为list，保存打出的牌；收到消息判断是否是自己打出的牌（start==self.playerid），据此反应不同
 
 ### 3. 'gamestart' msg:  
 * __Server__：no information to trans, but to check link status, reply matters  
@@ -41,6 +41,6 @@
 - [x] 服务端
 - [x] UI_CMD版本
 - [x] 使用说明
-- [ ] 编码
-- [ ] 测试
-- [ ] 交付
+- [ ] 更多人物
+- [ ] 更多牌类型
+- [ ] 其他客户端
