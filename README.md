@@ -7,6 +7,9 @@
 ### 客户端（CMD版本）
 	直接用python3启动Main中UI_Cmd/UI_cmd_main.py，或者运行Start_UI_Cmd.bat(Windows)或.sh(Linux)
 	等待所有玩家连接完成即可启动房间开始游戏
+	
+	
+
 
 ## 消息格式 
 以下为各个消息及其分别在客户端和server端的字段含义，其中每个消息具有`msg_name`、`myid`、`heros`、`cards`、`start`、`end`、`third`、`forth`、`fifth`、`reply`字段，其中
