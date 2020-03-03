@@ -23,7 +23,7 @@
 * __Client__：根据reply字段选择是否回复一个同类消息，用于连接检测
 
 ### 2. 'playcard' msg：  
-* __Server__：收到该消息代表客户端打出牌，其中third为打出的牌list；end为list，牌的目标玩家id
+* __Server__：收到该消息代表客户端打出牌，其中third为打出的牌list；end为list of牌的目标玩家id
 * __Client__：收到消息中，start与end表示打出牌的起点和终点，均为玩家id（不是英雄id）；third字段为list，保存打出的牌；收到消息判断是否是自己打出的牌（start==self.playerid），据此反应不同
 
 ### 3. 'gamestart' msg:  
