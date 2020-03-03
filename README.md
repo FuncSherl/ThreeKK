@@ -18,3 +18,8 @@
 4. pickhero msg:
 	for client, the third seg means heroes for s
 
+面向对象的三个基本特征：
+
+1. 封装
+2. 继承
+3. 多态
