@@ -6,6 +6,7 @@ Created on 2020年2月12日
 '''
 Port=7999   #监听端口
 Timeout=20   #recv的超时时间 s
+Select_Timeout=Timeout-2  #选择的超时时间，应该小于服务器等待超时时间 
 HeartBeat=3 #心跳时间间隔 s 
 FailerCnt=3 #出牌失败cnt
 

@@ -13,10 +13,12 @@ from Rooms import base
 from Common import Config,Message
 from UI_Cmd.person import person 
 import socket ,time
-import json,msvcrt
+import json,select
 import numpy as np
 import platform
 syst = platform.system()
+
+if syst=='Windows':      import msvcrt
 
 #import eventlet
 #eventlet.monkey_patch()
@@ -207,7 +209,7 @@ class UI_cmd:
             print (ti)
             
         
-    def input_withtimeout(self, informmsg='test:', func=int, timeout=Config.Timeout):
+    def input_withtimeout(self, informmsg='test:', func=int, timeout=Config.Select_Timeout, default=None):
         '''
         with eventlet.Timeout(Config.Timeout,False):
             res=input(informmsg)
@@ -220,6 +222,60 @@ class UI_cmd:
             return res
         return None
         '''
+        if syst == "Windows":  return self.input_withtimeout_windows(informmsg, func, timeout, default)
+        else: 
+            return self.input_withtimeout_linux(informmsg, func, timeout, default)
+        
+    def input_withtimeout_linux(self, informmsg='test:', func=int, timeout=Config.Select_Timeout, default=None):
+        def str2width(str):
+            str_b=str.encode()
+            l_m=len(str_b)-len(str)
+            return str.ljust(self.width-l_m)
+        
+        #清空输入缓冲
+        have_char=True
+        while have_char:
+            r, w, x = select.select([sys.stdin], [], [], 0.0)
+            have_char = (r and r[0] == sys.stdin)
+            if have_char: sys.stdin.read(1)
+        
+        inform=str2width(informmsg+'(%2d):'%(timeout))
+        start_time = time.time()
+        input_str = ''
+        while True:
+            #print ("\b"*len(inform), end='')
+            print ("\r", end='')
+            inform=str2width(informmsg+'(%2d):'%(timeout-time.time() + start_time)+input_str)
+            print (inform, end='')
+            
+            r, w, x = select.select([sys.stdin], [], [], 0.0)
+            have_char = (r and r[0] == sys.stdin)
+            
+            if have_char:
+                chr =  sys.stdin.read(1) 
+                #print (ord(chr))
+                if ord(chr) == 13: break  #enter    
+                elif ord(chr)==27: return None  #esc 取消        
+                elif ord(chr)== 8: input_str=input_str[:-1]      #backspace  
+                elif ord(chr) >= 32: #space_char
+                    input_str += chr.decode()            
+            if  (time.time() - start_time) >timeout:  break #return None            
+        
+        if len(input_str) <= 0:
+            #如果有默认值则返回默认值
+            if default is not None: return default
+            # 乱敲enter会一直询问 
+            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1))
+        try:
+            input_str=func(input_str)
+        except Exception as e:
+            #print ('input error:'+str(e), end='')
+            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1))
+        
+        return input_str
+        
+        
+    def input_withtimeout_windows(self, informmsg='test:', func=int, timeout=Config.Select_Timeout, default=None):        
         def str2width(str):
             str_b=str.encode()
             l_m=len(str_b)-len(str)
@@ -244,13 +300,18 @@ class UI_cmd:
                 elif ord(chr)== 8: input_str=input_str[:-1]      #backspace  
                 elif ord(chr) >= 32: #space_char
                     input_str += chr.decode()            
-            if  (time.time() - start_time) >timeout:  return None            
-        if len(input_str) <= 0: return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time))
+            if  (time.time() - start_time) >timeout:  break #return None            
+        
+        if len(input_str) <= 0:
+            #如果有默认值则返回默认值
+            if default is not None: return default
+            # 乱敲enter会一直询问 
+            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1))
         try:
             input_str=func(input_str)
         except Exception as e:
             #print ('input error:'+str(e), end='')
-            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time))
+            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1))
         
         return input_str
         
@@ -490,7 +551,7 @@ class UI_cmd:
         return True
     
     def on_pickhero(self, msg):
-        if msg['cards'] and msg['heros']: self.common_msg_process(msg)
+        #if msg['cards'] and msg['heros']: self.common_msg_process(msg)
         
         hero_sel=msg['heros']
         if not hero_sel: 
