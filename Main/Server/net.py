@@ -3,6 +3,9 @@ Created on 2020年2月12日
 
 @author: sherl
 '''
+import os,sys
+sys.path.append(os.path.abspath('.'))
+
 import socket
 import sys,json
 from Common import Config,Message

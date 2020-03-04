@@ -4,13 +4,16 @@ Created on 2020年2月26日
 
 @author: sherl
 '''
-import os,math,re
+import os,sys
+sys.path.append(os.path.abspath('.'))
+
+import math,re
 import Cards,Persons,Rooms
 from Rooms import base
 from Common import Config,Message
 from UI_Cmd.person import person 
 import socket ,time
-import sys,json,msvcrt
+import json,msvcrt
 import numpy as np
 import platform
 syst = platform.system()
