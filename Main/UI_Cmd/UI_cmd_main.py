@@ -265,12 +265,12 @@ class UI_cmd:
             #如果有默认值则返回默认值
             if default is not None: return default
             # 乱敲enter会一直询问 
-            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1))
+            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1), default=default)
         try:
             input_str=func(input_str)
         except Exception as e:
             #print ('input error:'+str(e), end='')
-            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1))
+            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1), default=default)
         
         return input_str
         
@@ -306,12 +306,12 @@ class UI_cmd:
             #如果有默认值则返回默认值
             if default is not None: return default
             # 乱敲enter会一直询问 
-            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1))
+            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1), default=default)
         try:
             input_str=func(input_str)
         except Exception as e:
             #print ('input error:'+str(e), end='')
-            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1))
+            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1), default=default)
         
         return input_str
         
