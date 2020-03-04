@@ -261,16 +261,13 @@ class UI_cmd:
                     input_str += chr.decode()            
             if  (time.time() - start_time) >timeout:  return default            
         
-        if len(input_str) <= 0:
-            #如果有默认值则返回默认值
-            if default is not None: return default
-            # 乱敲enter会一直询问 
-            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1), default=default)
+        if len(input_str) <= 0: return default
+            
         try:
             input_str=func(input_str)
         except Exception as e:
             #print ('input error:'+str(e), end='')
-            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1), default=default)
+            return default
         
         return input_str
         
@@ -296,22 +293,19 @@ class UI_cmd:
                 chr =  msvcrt.getche() 
                 #print (ord(chr))
                 if ord(chr) == 13: break  #enter    
-                elif ord(chr)==27: return None  #esc 取消        
+                elif ord(chr)==27: return default  #esc 取消        
                 elif ord(chr)== 8: input_str=input_str[:-1]      #backspace  
                 elif ord(chr) >= 32: #space_char
                     input_str += chr.decode()            
-            if  (time.time() - start_time) >timeout:  break #return None            
+            if  (time.time() - start_time) >timeout:  return default            
         
-        if len(input_str) <= 0:
-            #如果有默认值则返回默认值
-            if default is not None: return default
-            # 乱敲enter会一直询问 
-            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1), default=default)
+        if len(input_str) <= 0: return default
+            
         try:
             input_str=func(input_str)
         except Exception as e:
             #print ('input error:'+str(e), end='')
-            return self.input_withtimeout(informmsg, func, timeout=(timeout-time.time() + start_time-0.1), default=default)
+            return default
         
         return input_str
         
