@@ -19,11 +19,7 @@ import platform
 syst = platform.system()
 
 if syst=='Windows':      import msvcrt
-
-import pygame
-
-from pygame.locals import *
-pygame.init()
+else: from pynput.keyboard import Listener,Key 
 
 #import eventlet
 #eventlet.monkey_patch()
@@ -235,56 +231,46 @@ class UI_cmd:
         def str2width(str):
             str_b=str.encode()
             l_m=len(str_b)-len(str)
-            return str.ljust(int( self.width-l_m))
-        
-        #清空输入缓冲
-        '''
-        have_char=True
-        while have_char:
-            r, w, x = select.select([sys.stdin], [], [], 0.0)
-            have_char = (r and r[0] == sys.stdin)
-            if have_char: sys.stdin.read(1)
-        '''
-       
-        pygame.event.clear()
-        inform=str2width(informmsg+'(%2d):'%(timeout))
+            return str.ljust(int( self.width-l_m))       
+                
+        #inform=str2width(informmsg+'(%2d):'%(timeout))
         start_time = time.time()
-        input_str = 'ffaa'
-        while True:
+        input_str = ''
+        goon=True
+        
+        def press(key):
+            nonlocal input_str,goon
+            try:
+                #print (key, type(key)) 
+                input_str+=key.char
+            except AttributeError:
+                #print (key, type(key))
+                if key==Key.esc: 
+                    goon=False
+                    input_str=default
+                    return False
+                elif key==Key.enter and  input_str: #按下enter时如果未输入则不管他
+                    goon=False
+                    return False
+                elif key==Key.backspace:
+                    input_str=input_str[:-1]
+        #Call pynput.keyboard.Listener.stop from anywhere, raise StopException or return False from a callback to stop the listener
+        listener= Listener(on_press = press)
+        listener.start()
+            
+        while goon:
             #print ("\b"*len(inform), end='')
             #print ("\r", end='')
             inform=str2width(informmsg+'(%2d):'%(timeout-time.time() + start_time)+input_str)
             print ("\r"+inform, end='')
-            '''
-            r, w, x = select.select([sys.stdin], [], [], 0.0)
-            have_char = (r and r[0] == sys.stdin)
-            '''
             
-            for event in pygame.event.get():
-                if event.type == KEYDOWN:
-                    if event.key == K_BACKSPACE:
-                        input_str=input_str[:-1]
-                    elif event.key == K_ESCAPE:
-                        return default
-                    elif event.key == 13: break  #enter 
-                    elif event.key >=32: input_str += chr(event.key)
-            '''
-            while have_char:
-                chr =  sys.stdin.read(1) 
-                print (ord(chr))
-                if ord(chr) == 13: break  #enter    
-                elif ord(chr)==27: return default  #esc 取消        
-                elif ord(chr)== 8: input_str=input_str[:-1]      #backspace  
-                elif ord(chr) >= 32: #space_char
-                    input_str += chr           
-                    
-                r, w, x = select.select([sys.stdin], [], [], 0.0)
-                have_char = (r and r[0] == sys.stdin)
-            '''
-            if  (time.time() - start_time) >timeout:  return default            
+            if  (time.time() - start_time) >timeout: 
+                listener.stop() 
+                return default    
+            time.sleep(0.5)        
         
-        if len(input_str) <= 0: return default
-            
+        if not input_str: return default           
+                    
         try:
             input_str=func(input_str)
         except Exception as e:
