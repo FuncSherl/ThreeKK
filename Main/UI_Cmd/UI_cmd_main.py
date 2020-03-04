@@ -258,7 +258,7 @@ class UI_cmd:
                 elif ord(chr)==27: return default  #esc 取消        
                 elif ord(chr)== 8: input_str=input_str[:-1]      #backspace  
                 elif ord(chr) >= 32: #space_char
-                    input_str += chr.decode()            
+                    input_str += chr           
             if  (time.time() - start_time) >timeout:  return default            
         
         if len(input_str) <= 0: return default
