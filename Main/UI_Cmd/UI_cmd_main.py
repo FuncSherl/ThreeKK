@@ -255,11 +255,11 @@ class UI_cmd:
                 chr =  sys.stdin.read(1) 
                 #print (ord(chr))
                 if ord(chr) == 13: break  #enter    
-                elif ord(chr)==27: return None  #esc 取消        
+                elif ord(chr)==27: return default  #esc 取消        
                 elif ord(chr)== 8: input_str=input_str[:-1]      #backspace  
                 elif ord(chr) >= 32: #space_char
                     input_str += chr.decode()            
-            if  (time.time() - start_time) >timeout:  break #return None            
+            if  (time.time() - start_time) >timeout:  return default            
         
         if len(input_str) <= 0:
             #如果有默认值则返回默认值
@@ -559,7 +559,7 @@ class UI_cmd:
             return False
         self.sel_hero_draw(hero_sel)
         self.update( False)
-        res=self.input_withtimeout('请选择人物序号(default:0):', int)
+        res=self.input_withtimeout('请选择人物序号(default:0):', int,default=0)
         
         if res is None: 
             print("\r选择超时,使用默认", end='')
