@@ -84,7 +84,8 @@ class person(object):
                 '武器:'+','.join( [Cards.class_list[x[0]].name for x in self.armers]),\
               '防御:'+','.join( [Cards.class_list[x[0]].name for x in self.shields]), \
               '马+1:'+','.join( [Cards.class_list[x[0]].name for x in self.horse_plus]),\
-              '马-1:'+','.join( [Cards.class_list[x[0]].name for x in self.horse_minus]),  '手牌:'+'N'*len(self.cards)]
+              '马-1:'+','.join( [Cards.class_list[x[0]].name for x in self.horse_minus]),  '手牌:'+'N'*len(self.cards),\
+              '状态:'+','.join( [Cards.class_list[x[0]].name for x in self.delayed_skill])]
         
     def get_describe(self):
         return self.add_box(self.form_other_person())

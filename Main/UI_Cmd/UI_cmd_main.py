@@ -249,9 +249,11 @@ class UI_cmd:
                     goon=False
                     input_str=default
                     return False
-                elif key==Key.enter and  input_str: #按下enter时如果未输入则不管他
-                    goon=False
-                    return False
+                elif key==Key.enter: #按下enter时如果未输入则不管他
+                    input()
+                    if input_str:
+                        goon=False
+                        return False
                 elif key==Key.backspace:
                     input_str=input_str[:-1]
         #Call pynput.keyboard.Listener.stop from anywhere, raise StopException or return False from a callback to stop the listener
@@ -267,7 +269,7 @@ class UI_cmd:
             if  (time.time() - start_time) >timeout: 
                 listener.stop() 
                 return default    
-            time.sleep(0.5)        
+            time.sleep(0.1)        
         
         if not input_str: return default           
                     
@@ -329,6 +331,7 @@ class UI_cmd:
                 time.sleep(0.5)
             else: self.listen_fail_cnt=0
         print ('Room Destroyed!')
+        sys.stdin.flush()#清空输入缓冲
     
     def panel_set_at(self, char_str, stx, sty):
         if sty>=len(self.pannel): return stx     #self.panel_set_at(char_str, 0, 0)

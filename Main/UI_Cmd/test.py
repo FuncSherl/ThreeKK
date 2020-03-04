@@ -24,22 +24,29 @@ def test2():
     print ('test2')
     from pynput.keyboard import Listener,Key
  
-    input=''
+    input_s=''
+    goon=True
     def press(key):
-        nonlocal input
+        nonlocal input_s,goon
         try:
             print (key, type(key)) 
-            input+=key.char
+            input_s+=key.char
         except AttributeError:
             print (key, type(key))
-            if key==Key.esc: print ('esc press')
-            elif key==Key.enter: print ('enter press')
+            if key==Key.esc: 
+                #sys.stdin.flush()
+                goon=False
+                return False
+            elif key==Key.enter: 
+                input()
+                #sys.stdin.flush()
+                print ('enter press')
      
     listener= Listener(on_press = press)
     listener.start()
-    while 1:
+    while goon:
         time.sleep(2)
-        print (input)
+        print (input_s)
         
 if name_t == 'test2': test2()
     
