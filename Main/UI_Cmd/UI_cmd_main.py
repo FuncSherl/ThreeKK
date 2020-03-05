@@ -249,8 +249,10 @@ class UI_cmd:
                     goon=False
                     input_str=default
                     return False
+                elif key==Key.space:
+                    input_str+=' '
                 elif key==Key.enter: #按下enter时如果未输入则不管他
-                    input()
+                    input() #清空输入字符在缓冲区中未读取导致执行命令
                     if input_str:
                         goon=False
                         return False
@@ -262,7 +264,7 @@ class UI_cmd:
             
         while goon:
             #print ("\b"*len(inform), end='')
-            #print ("\r", end='')
+            print ("\r", end='')
             inform=str2width(informmsg+'(%2d):'%(timeout-time.time() + start_time)+input_str)
             print ("\r"+inform, end='')
             
