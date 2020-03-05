@@ -25,5 +25,5 @@ All_people_cnt=20   #当向所有人出牌时，目标数目
 
 Message_tail='#*#'
 
-Cmd_UI_Height=int( 30 *1.5)
-Cmd_UI_Width=int(120 *1.5 )
+Cmd_UI_Height=int( 30 *1.2)
+Cmd_UI_Width=int(120 *1.2 )

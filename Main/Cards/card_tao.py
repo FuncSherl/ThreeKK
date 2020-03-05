@@ -12,6 +12,8 @@ class card_tao(base_basic.base):
     active=None    #能主动出牌吗[true, false, none]
     name='桃'
     name_pinyin='Tao'
+    describe='你在想peach'
+    
     against_names=[]
     target_nums=1  #能指定几个目标
     damage=0

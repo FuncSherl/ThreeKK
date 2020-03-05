@@ -13,6 +13,7 @@ class base(Cards.base.base):
     cards_num_color=[0,0,0,0] #黑桃、梅花、红心、方片
     name='base_shield'
     name_pinyin='base_shield'
+    describe='base_shield'
     type=Config.Card_type_enum[3] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
     against_names=[]
     damage=0

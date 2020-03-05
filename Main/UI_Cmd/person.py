@@ -91,12 +91,13 @@ class person(object):
         return self.add_box(self.form_other_person())
         
     @classmethod
-    def form_card(cls, card, cards_to_sel=[]):
+    def form_card(cls, card, cards_to_sel=[], withdesc=False):
         name=Cards.class_list[card[0]].name
         #\033[显示方式;前景色;背景色m + 结尾部分：\033[0m
         lmin=min([len(x) for x in Config.Card_color_enum])
         col=Config.Card_color_chinese[card[1]].upper()
-        return '['+name+':'+col+':'+'%d'%(card[2])+']'+('*' if card in cards_to_sel else '')
+        return '['+name+':'+col+':'+'%d'%(card[2])+']'+('*' if card in cards_to_sel else '') \
+            + (':'+Cards.class_list[card[0]].describe if withdesc else '')
     
     
     def form_all_cards(self):

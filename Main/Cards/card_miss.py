@@ -13,6 +13,8 @@ class card_miss(base_basic.base):
     active=False    #能主动被出牌吗
     name='闪'
     name_pinyin='Miss'
+    describe='溜了溜了'
+    
     against_names=[]
     target_nums=0  #能指定几个目标
     damage=0

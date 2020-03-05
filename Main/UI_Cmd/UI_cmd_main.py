@@ -118,7 +118,7 @@ class UI_cmd:
             
     def draw_play_cards(self):
         #played_cards[[cards],[sts],[ends]  ]
-        descs=[person.form_card(x) for x in self.played_cards[0]]
+        descs=[person.form_card(x, withdesc=True) for x in self.played_cards[0]]
         if not descs: return
         mlen=max( [len(x) for x in descs] )
         stx=int((self.width-mlen)/2)

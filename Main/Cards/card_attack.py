@@ -13,6 +13,8 @@ class card_attack(base_basic.base):
     active=True    #能主动出牌吗[true, false, none]
     name='杀'
     name_pinyin='ATTACK'
+    describe='攻击一下 '
+    
     against_names=['闪']
     target_nums=1  #能指定几个目标
     damage=1

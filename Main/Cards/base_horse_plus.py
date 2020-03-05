@@ -13,6 +13,7 @@ class base(Cards.base.base):
     cards_num_color=[0,0,0,0] #黑桃、梅花、红心、方片
     name='base_horse_plus'
     name_pinyin='base_horse_plus'
+    describe='base_horse_plus'
     type=Config.Card_type_enum[5] #默认是基本牌['basic', 'skill', 'armer', 'shield', 'horse_minus', 'horse_plus']
     against_names=[]
     damage=0
