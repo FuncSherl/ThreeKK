@@ -21,13 +21,12 @@ syst = platform.system()
 if syst=='Windows':      import msvcrt
 else: from pynput.keyboard import Listener,Key 
 
-#import eventlet
-#eventlet.monkey_patch()
+os.popen('mode con cols=%d lines=%d'%(Config.Cmd_UI_Width, Config.Cmd_UI_Height))
 
 
 class UI_cmd:        
-    height=30-1  #cmd为30行
-    width=120-2 #120列个字符
+    height=Config.Cmd_UI_Height-1  #cmd为30行
+    width=Config.Cmd_UI_Width-1 #120列个字符
     
 
     user_stx=int(width/4)
