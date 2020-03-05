@@ -1,0 +1,3 @@
+pynput==1.6.8
+numpy==1.16.2
+msvcrt
