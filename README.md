@@ -13,7 +13,7 @@
 ### 1、由于CMD窗口过小，导致刷屏  
 * 请将cmd窗口扩展至至**高30字符，宽120字符**(也即windows默认cmd的大小)，Linux下需要拉伸  
 ### 2、缺少python3中的库  
-* 缺啥补啥:  `pip3 install <packagename>` 
+* 缺啥补啥:  `pip3 install <packagename>`
 
 
 
