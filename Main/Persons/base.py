@@ -186,8 +186,7 @@ class base:
         if damage:
             damage=self.before_damaged( person_start, damage, card) #装备效果和技能
             self.health-=damage
-            if self.health<=0:
-                self.ask_for_save()
+            while self.health<=0 and self.ask_for_save(): pass
             #后面如果还血量不够，就死亡
             if self.health<=0:
                 #return 继续游戏？
@@ -488,13 +487,13 @@ class base:
         while ind!=self.playerid:
             #playcard(self, cardtoselect, selectcnt=1, inform='出牌阶段', end=None, endnum=[1], active=True, go_on=True)
             cards_tao=[x for x in self.room.heros_instance[ind].cards if (x[0]==Cards.map_name_id['桃'])]
-            self.room.heros_instance[ind].playcard(cards_tao, 1, inform='是否对%s使用一张桃'%(self.room.heros_instance[self.playerid].name) , \
+            resu=self.room.heros_instance[ind].playcard(cards_tao, 1, inform='是否对%s使用一张桃'%(self.room.heros_instance[self.playerid].name) , \
                                                    end=[self.playerid], endnum=[1], active=False, go_on=True    )
-            
+            if resu: return True
 
             ind=(ind+1)%len(self.room.socket_list)
         
-        
+        return False
     
     
     #下面为消息响应区 ，该部分的函数应该与Messge中的一致，注意这里为收到消息的响应，其驱动为收到消息
