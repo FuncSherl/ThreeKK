@@ -169,6 +169,7 @@ class base:
         
         cnt_ned=len(self.socket_list)*Config.HerosforSelect
         hero_list=random.sample(list( range( len(Persons.class_list) )), cnt_ned)
+        #这里每个人信息不同，需要单独处理
         for ind,i in enumerate(self.socket_list):
             msg=Message.form_pickhero(ind,  hero_list[ind*Config.HerosforSelect:(ind+1)*Config.HerosforSelect] , reply=True )
             self.send_map_str(i, msg)
