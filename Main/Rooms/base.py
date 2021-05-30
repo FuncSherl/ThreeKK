@@ -260,8 +260,8 @@ class base:
         while self.game_status:
             print ('player:',st,'->',self.heros_instance[st].name,' round start!')
             if self.heros_instance[st].alive and self.game_status: self.roundstart(st)
-            if self.heros_instance[st].alive and self.game_status: self.playcardstart(st)
-            if self.heros_instance[st].alive and self.game_status: self.roundend(st)
+            #if self.heros_instance[st].alive and self.game_status: self.playcardstart(st)
+            #if self.heros_instance[st].alive and self.game_status: self.roundend(st)
             print ('next player round')
             if not self.gamestatus_judge(): break
             st+=1

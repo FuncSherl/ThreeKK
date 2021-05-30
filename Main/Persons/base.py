@@ -69,6 +69,7 @@ class base:
         self.round_init()
         #没有技能情况下就是摸2张牌，这里room.getcard可以从玩家手中摸牌，此时start为被摸牌的玩家 
         self.room.on_getcard( Config.Cardeachround, end=self.playerid, start=None,  public=False,  reply=False)
+        self.playcardstart()
         
     def roundend(self):
         if len(self.cards)>self.health:      
