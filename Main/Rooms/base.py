@@ -131,6 +131,7 @@ class base:
         return ret
     
     def send_msg_to_all(self, msg, replylist=[]):
+        ret=[]
         origin_reply=msg['reply']   #使用这个保存原来消息中的reply，如果改消息为全部回答的，只要msg中reply=True就行，不用填充replylist
         for ind,i in enumerate(self.socket_list):
             msg['myid']=ind  #第几个玩家
@@ -143,10 +144,12 @@ class base:
             msg['reply']=(ind in replylist) or origin_reply
             
             res=self.send_map_str(i, msg)
+            ret.append(res)
+        return ret
             
     def send_heartbeat_to_all(self, reply=False):
         msg=Message.form_heartbeat(reply=reply)
-        self.send_msg_to_all(msg)
+        res=self.send_msg_to_all(msg)
         if reply:
             ret=self.send_recv_onebyone(self.socket_list, [Message.msg_types[0]])
             for ind,i in enumerate(ret):
